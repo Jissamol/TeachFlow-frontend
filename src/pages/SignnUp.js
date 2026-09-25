@@ -86,7 +86,14 @@ const SignnUp = () => {
         navigate("/login");
       } else {
         alert("❌ Registration failed. Please check the form.");
-        setErrors(data); // Django field errors
+        
+        // Django often returns errors as arrays, e.g., {"email": ["user with this email already exists."]}
+        // We'll format them to strings for easier display
+        const formattedErrors = {};
+        for (const key in data) {
+          formattedErrors[key] = Array.isArray(data[key]) ? data[key][0] : data[key];
+        }
+        setErrors(formattedErrors);
       }
     } catch (err) {
       console.error("Signup error:", err);
@@ -100,6 +107,12 @@ const SignnUp = () => {
     <div className="signup-container">
       <div className="signup-card">
         <h2>TeachFlow – Faculty Sign Up</h2>
+
+        {errors.non_field_errors && (
+          <div className="error" style={{ marginBottom: "15px", textAlign: "center" }}>
+            {errors.non_field_errors}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <input

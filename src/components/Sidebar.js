@@ -6,14 +6,14 @@ const Sidebar = () => {
   const location = useLocation();
 
   const menuItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: '📊' },
-    { name: 'Teaching & Learning', path: '/pbas/teaching', icon: '📚' },
-    { name: 'Student Support', path: '/pbas/student-support', icon: '🎓' },
-    { name: 'Research', path: '/pbas/research', icon: '🔬' },
-    { name: 'Academic Contributions', path: '/pbas/academic', icon: '🏆' },
-    { name: 'Institutional Responsibility', path: '/pbas/institutional', icon: '🏛️' },
-    { name: 'Reports', path: '/pbas/report', icon: '📄' },
-    { name: 'Profile', path: '/profile', icon: '👤' },
+    { name: 'Dashboard', path: '/dashboard' },
+    { name: 'Teaching & Learning', path: '/pbas/teaching' },
+    { name: 'Student Support', path: '/pbas/student-support' },
+    { name: 'Research', path: '/pbas/research' },
+    { name: 'Academic Contributions', path: '/pbas/academic' },
+    { name: 'Institutional Responsibility', path: '/pbas/institutional' },
+    { name: 'Reports', path: '/pbas/report' },
+    { name: 'Profile', path: '/profile' },
   ];
 
   return (
@@ -25,7 +25,6 @@ const Sidebar = () => {
         {menuItems.map((item, index) => (
           <li key={index} className={`sidebar-item ${location.pathname === item.path ? 'active' : ''}`}>
             <Link to={item.path} className="sidebar-link">
-              <span className="sidebar-icon">{item.icon}</span>
               <span className="sidebar-text">{item.name}</span>
             </Link>
           </li>
