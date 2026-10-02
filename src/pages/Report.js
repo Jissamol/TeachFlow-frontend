@@ -66,54 +66,160 @@ const Report = () => {
     return false;
   };
 
-  const generatePDF = () => {
+  const generatePDF = async () => {
+    setLoading(true);
     const doc = new jsPDF();
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     
-    doc.setFontSize(22);
-    doc.setTextColor(26, 77, 46); 
-    doc.text("TeachFlow PBAS Official Report", 14, 20);
+    let currentY = 40;
+    let pageNum = 1;
+
+    const drawHeader = (doc, pNum) => {
+        doc.setFillColor(26, 77, 46);
+        doc.rect(0, 0, 210, 25, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("times", 'bold');
+        doc.setFontSize(22);
+        doc.text("PERFORMANCE DOSSIER", 14, 17);
+        doc.setFont("helvetica", 'normal');
+        doc.setFontSize(10);
+        doc.text(`PAGE ${pNum}`, 180, 17);
+    };
     
-    doc.setFontSize(10);
-    doc.setTextColor(100);
+    drawHeader(doc, pageNum);
+
     const filterText = reportType === "Yearly" ? `Academic Year: ${filterYear}` : 
                       reportType === "Monthly" ? `Monthly Log: ${filterMonth}` : 
                       `Custom Range: ${startDate} to ${endDate}`;
-    doc.text(filterText, 14, 30);
-    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 36);
 
-    doc.setDrawColor(200);
-    doc.rect(14, 42, 182, 15);
-    doc.text(`Faculty Record: ${user.username || "Staff Member"}`, 18, 51);
-
-    let currentY = 70;
+    // Meta Block
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(226, 232, 240);
+    doc.rect(14, currentY, 182, 28, 'FD');
+    doc.setFontSize(14); doc.setFont("times", 'bold'); doc.setTextColor(26, 77, 46);
+    doc.text(`FACULTY RECORD: ${user.username ? user.username.toUpperCase() : "STAFF MEMBER"}`, 20, currentY + 12);
+    doc.setFontSize(10); doc.setFont("helvetica", 'normal'); doc.setTextColor(100);
+    doc.text(`${filterText}  |  Generated: ${new Date().toLocaleDateString()}`, 20, currentY + 20);
+    
+    currentY += 45;
+    
     const sections = [
-        { id: "teaching", title: "1. Teaching & Learning", data: allData.teaching.filter(checkMatch), headers: [["Course", "From", "To", "Assigned", "Taught"]], mapping: (d) => [d.course_name, d.from_date, d.to_date, d.classes_assigned, d.classes_taught] },
-        { id: "studentSupport", title: "2. Student Support", data: allData.studentSupport.filter(checkMatch), headers: [["Activity", "From", "To", "Audience", "Hours"]], mapping: (d) => [d.activity_name, d.from_date, d.to_date, d.target_audience, d.hours_spent] },
-        { id: "research", title: "3. Research Works", data: allData.research.filter(checkMatch), headers: [["Type", "From", "To", "Title", "Status"]], mapping: (d) => [d.research_type, d.from_date, d.to_date, d.title, d.status_or_impact] },
-        { id: "academic", title: "4. Contributions", data: allData.academic.filter(checkMatch), headers: [["Type", "From", "To", "Title", "Org"]], mapping: (d) => [d.contribution_type, d.from_date, d.to_date, d.title, d.organization] },
-        { id: "institutional", title: "5. Institutional Duty", data: allData.institutional.filter(checkMatch), headers: [["Type", "From", "To", "Position"]], mapping: (d) => [d.responsibility_type, d.from_date, d.to_date, d.position] }
+        { id: "teaching", title: "I. TEACHING & LEARNING", data: allData.teaching.filter(checkMatch) },
+        { id: "studentSupport", title: "II. MENTORSHIP & SUPPORT", data: allData.studentSupport.filter(checkMatch) },
+        { id: "research", title: "III. RESEARCH & PUBLICATION", data: allData.research.filter(checkMatch) },
+        { id: "academic", title: "IV. ACADEMIC ACHIEVEMENTS", data: allData.academic.filter(checkMatch) },
+        { id: "institutional", title: "V. INSTITUTIONAL SERVICE", data: allData.institutional.filter(checkMatch) }
     ];
 
-    sections.forEach((s) => {
-        if (!selectedModules[s.id]) return;
-        if (currentY > 240) { doc.addPage(); currentY = 20; }
-        doc.setFontSize(11); doc.setTextColor(26, 77, 46); doc.setFont("helvetica", 'bold'); doc.text(s.title, 14, currentY); currentY += 5;
-        if (s.data.length === 0) {
-            doc.setFontSize(9); doc.setTextColor(150); doc.setFont("helvetica", 'normal'); doc.text("- No matching records found.", 14, currentY); currentY += 12;
-        } else {
-            autoTable(doc, {
-                startY: currentY, head: s.headers, body: s.data.map(s.mapping),
-                headStyles: { fillColor: [26, 77, 46], textColor: [255, 255, 255], fontSize: 8 },
-                bodyStyles: { fontSize: 7.5 }, margin: { left: 14, right: 14 }, theme: 'grid'
-            });
-            currentY = doc.lastAutoTable.finalY + 12;
-        }
-    });
+    const getImageUrl = (url) => {
+        if (!url) return null;
+        if (url.startsWith('http')) return url;
+        return `http://127.0.0.1:8000${url}`;
+    };
 
-    const pc = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pc; i++) { doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150); doc.text(`Document Page ${i} of ${pc}`, 105, 285, { align: "center" }); }
-    doc.save(`Report_${reportType}_${filterYear}.pdf`);
+    const addImageToDoc = async (url, x, y, maxWidth, maxHeight) => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.onload = () => {
+                const ratio = img.width / img.height;
+                let finalW = maxWidth;
+                let finalH = maxWidth / ratio;
+                if (finalH > maxHeight) {
+                    finalH = maxHeight;
+                    finalW = maxHeight * ratio;
+                }
+                const canvas = document.createElement("canvas");
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0);
+                const dataUrl = canvas.toDataURL("image/jpeg");
+                doc.addImage(dataUrl, 'JPEG', x, y, finalW, finalH);
+                resolve({ w: finalW, h: finalH });
+            };
+            img.onerror = () => resolve(null);
+            img.src = url;
+        });
+    };
+
+    const checkPageBreak = (neededHeight) => {
+        if (currentY + neededHeight > 280) {
+            doc.addPage();
+            pageNum++;
+            drawHeader(doc, pageNum);
+            currentY = 40;
+        }
+    };
+
+    for (const s of sections) {
+        if (!selectedModules[s.id]) continue;
+        
+        checkPageBreak(30);
+        doc.setFontSize(18); doc.setTextColor(26, 77, 46); doc.setFont("times", 'bold'); 
+        doc.text(s.title, 14, currentY); 
+        doc.setDrawColor(26, 77, 46); doc.setLineWidth(0.5);
+        doc.line(14, currentY + 3, 196, currentY + 3);
+        currentY += 15;
+        
+        if (s.data.length === 0) {
+            doc.setFontSize(10); doc.setTextColor(150); doc.setFont("helvetica", 'italic'); 
+            doc.text("No records submitted for this period.", 14, currentY); 
+            currentY += 20;
+            continue;
+        }
+
+        for (let i = 0; i < s.data.length; i++) {
+            const entry = s.data[i];
+            checkPageBreak(30);
+            
+            // Record Mini-Header
+            doc.setFillColor(240, 248, 244); // Very light green
+            doc.rect(14, currentY - 5, 182, 7, 'F');
+            doc.setFontSize(9); doc.setFont("helvetica", 'bold'); doc.setTextColor(26, 77, 46);
+            doc.text(`RECORD #${i + 1}`, 16, currentY);
+            currentY += 8;
+            
+            const excludedKeys = ['id', 'user', 'created_at', 'updated_at', 'supporting_image'];
+            const keys = Object.keys(entry).filter(k => !excludedKeys.includes(k) && entry[k] !== null && entry[k] !== "");
+            
+            for (const key of keys) {
+                checkPageBreak(12);
+                doc.setFontSize(9); doc.setFont("helvetica", 'bold'); doc.setTextColor(100);
+                const label = key.replace(/_/g, ' ').toUpperCase();
+                doc.text(label, 16, currentY);
+                
+                doc.setFont("helvetica", 'normal'); doc.setTextColor(40);
+                const val = String(entry[key]);
+                const splitText = doc.splitTextToSize(val, 130);
+                doc.text(splitText, 65, currentY);
+                
+                currentY += (splitText.length * 6);
+            }
+            
+            if (entry.supporting_image) {
+                checkPageBreak(90);
+                doc.setFontSize(9); doc.setFont("helvetica", 'bold'); doc.setTextColor(100);
+                doc.text("ATTACHMENT", 16, currentY + 5);
+                
+                const imgUrl = getImageUrl(entry.supporting_image);
+                const imgResult = await addImageToDoc(imgUrl, 65, currentY, 100, 80);
+                if (imgResult) {
+                    currentY += imgResult.h + 10;
+                } else {
+                    doc.setFont("helvetica", 'italic'); doc.setTextColor(150);
+                    doc.text("[Image unavailable]", 65, currentY + 5);
+                    currentY += 15;
+                }
+            } else {
+                currentY += 5;
+            }
+            currentY += 10;
+        }
+    }
+    
+    doc.save(`TeachFlow_Dossier_${filterYear}.pdf`);
+    setLoading(false);
   };
 
   const years = ["2023-2024", "2024-2025", "2025-2026"];
@@ -121,38 +227,49 @@ const Report = () => {
   return (
     <>
       <style>{`
-        .pipeline-wrapper { min-height: 100vh; background: #faf8f5; padding: 60px 20px; font-family: 'Work Sans', sans-serif; overflow-x: hidden; }
-        .pipeline-title { text-align: center; color: #1a4d2e; font-family: 'Crimson Pro', serif; font-size: 3rem; font-weight: 800; margin-bottom: 60px; letter-spacing: 1px; }
+        .pipeline-wrapper { min-height: 100vh; background-color: #f1f5f9; background-image: url('/report_bg.jpg'); background-size: cover; background-position: center; background-attachment: fixed; padding: 60px 20px; font-family: 'Work Sans', sans-serif; overflow-x: hidden; }
+        .pipeline-title { text-align: center; color: #1a4d2e; font-family: 'Crimson Pro', serif; font-size: 3rem; font-weight: 800; margin-bottom: 60px; letter-spacing: 1px; text-shadow: 0 4px 15px rgba(255,255,255,0.8); }
         
         .pipeline-container { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; position: relative; }
         
         /* The central spine */
-        .spine { position: absolute; top: 0; bottom: 0; left: 50%; width: 4px; background: #e2e8f0; transform: translateX(-50%); z-index: 0; }
+        .spine { position: absolute; top: 0; bottom: 0; left: 50%; width: 4px; background: rgba(26,77,46,0.15); transform: translateX(-50%); z-index: 0; }
         
         .pipeline-node { position: relative; z-index: 1; width: 100%; display: flex; flex-direction: column; align-items: center; margin-bottom: 60px; }
-        .node-label { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #1a4d2e; font-weight: 700; background: #faf8f5; padding: 10px 30px; border-radius: 30px; margin-bottom: 30px; border: 2px solid #c8e6c9; box-shadow: 0 4px 15px rgba(26,77,46,0.05); }
+        .node-label { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #1a4d2e; font-weight: 700; background: rgba(250, 248, 245, 0.95); backdrop-filter: blur(8px); padding: 10px 30px; border-radius: 30px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 4px 15px rgba(26,77,46,0.05); }
         
         /* Timeframe Block (Box) */
-        .timeframe-box { background: white; width: 100%; max-width: 500px; padding: 30px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-        .time-tabs { display: flex; gap: 10px; margin-bottom: 20px; background: #f1f5f9; padding: 6px; border-radius: 12px; }
+        .timeframe-box { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); width: 100%; max-width: 500px; padding: 30px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); border: 1px solid rgba(255,255,255,0.8); }
+        .time-tabs { display: flex; gap: 10px; margin-bottom: 20px; background: rgba(241, 245, 249, 0.8); padding: 6px; border-radius: 12px; }
         .ttab { flex: 1; padding: 12px; background: transparent; border: none; font-weight: 800; color: #64748b; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 0.9rem; letter-spacing: 0.5px; }
         .ttab.active { background: white; color: #1a4d2e; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .tinput { width: 100%; padding: 16px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 1.1rem; color: #1e293b; background: #f8fafc; font-weight: 700; outline: none; text-align: center; transition: 0.3s; }
+        .tinput { width: 100%; padding: 16px; border: 1px solid rgba(203,213,225,0.8); border-radius: 12px; font-size: 1.1rem; color: #1e293b; background: rgba(255,255,255,0.9); font-weight: 700; outline: none; text-align: center; transition: 0.3s; }
         .tinput:focus { border-color: #1a4d2e; background: white; }
         
-        /* Module Strips */
-        .module-strip { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; padding: 24px 40px; border-radius: 100px; margin: 12px 0; cursor: pointer; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid #cbd5e1; background: white; position: relative; overflow: hidden; }
-        .module-strip::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background: #1a4d2e; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); z-index: 0; }
-        .module-strip.active { border-color: #1a4d2e; transform: scale(1.03); box-shadow: 0 15px 30px rgba(26,77,46,0.15); }
-        .module-strip.active::before { width: 100%; }
+        /* Table of Contents Selector */
+        .toc-list { width: 100%; max-width: 700px; display: flex; flex-direction: column; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(16px); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.08); border: 1px solid rgba(255,255,255,0.8); padding: 40px; position: relative; z-index: 2; }
+        .toc-item { display: flex; justify-content: space-between; align-items: baseline; padding: 20px 0; cursor: pointer; transition: 0.3s; border-bottom: 1px solid rgba(26,77,46,0.1); }
+        .toc-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .toc-item:first-child { padding-top: 0; }
+        .toc-item:hover .toc-title { transform: translateX(5px); }
         
-        .strip-text { position: relative; z-index: 1; font-size: 1.2rem; font-weight: 800; color: #475569; letter-spacing: 1px; transition: 0.4s; text-transform: uppercase; }
-        .module-strip.active .strip-text { color: white; }
+        .toc-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: #94a3b8; font-weight: 500; transition: 0.4s; display: flex; align-items: baseline; gap: 15px; }
+        .toc-item.active .toc-title { color: #1a4d2e; font-weight: 800; }
         
-        .strip-toggle { position: relative; z-index: 1; width: 56px; height: 32px; border-radius: 20px; background: #e2e8f0; transition: 0.4s; border: 2px solid #94a3b8; }
-        .strip-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; background: white; border-radius: 50%; transition: 0.4s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .module-strip.active .strip-toggle { background: #4ade80; border-color: #4ade80; }
-        .module-strip.active .strip-toggle::after { transform: translateX(24px); }
+        .toc-num { font-family: 'Work Sans', sans-serif; font-size: 1rem; color: #cbd5e1; font-weight: 700; transition: 0.4s; }
+        .toc-item.active .toc-num { color: #1a4d2e; }
+        
+        .toc-status { display: flex; align-items: center; }
+        
+        .yn-group { display: flex; border: 1px solid rgba(26,77,46,0.2); border-radius: 6px; overflow: hidden; background: rgba(255,255,255,0.5); }
+        .yn-btn { padding: 6px 14px; font-size: 0.75rem; font-weight: 800; transition: 0.3s; color: #94a3b8; letter-spacing: 1px; }
+        
+        .toc-item.active .yn-group { border-color: #1a4d2e; }
+        .toc-item.active .yn-btn.yes { background: #1a4d2e; color: white; }
+        .toc-item:not(.active) .yn-btn.no { background: #e2e8f0; color: #475569; }
+        
+        .toc-dot-leader { flex-grow: 1; border-bottom: 2px dotted rgba(26,77,46,0.2); margin: 0 20px; position: relative; top: -6px; transition: 0.4s; }
+        .toc-item.active .toc-dot-leader { border-bottom: 2px dotted #1a4d2e; }
         
         /* Generate Button Node */
         .btn-generate-node { width: 220px; height: 220px; border-radius: 50%; background: linear-gradient(135deg, #1a4d2e, #2d6a4f); color: white; display: flex; justify-content: center; align-items: center; font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 800; cursor: pointer; transition: 0.4s; box-shadow: 0 15px 40px rgba(26,77,46,0.3); border: none; z-index: 2; position: relative; text-align: center; line-height: 1.2; padding: 20px; }
@@ -192,18 +309,29 @@ const Report = () => {
               <div className="pipeline-node">
                   <span className="node-label">PHASE 2: DATA INCLUSION</span>
                   
-                  {[
-                      { id: 'teaching', label: 'Teaching & Learning' },
-                      { id: 'studentSupport', label: 'Mentorship & Support' },
-                      { id: 'research', label: 'Research & Publication' },
-                      { id: 'academic', label: 'Academic Achievements' },
-                      { id: 'institutional', label: 'Institutional Service' }
-                  ].map(mod => (
-                      <div key={mod.id} className={`module-strip ${selectedModules[mod.id] ? 'active' : ''}`} onClick={() => toggleModule(mod.id)}>
-                          <span className="strip-text">{mod.label}</span>
-                          <div className="strip-toggle"></div>
-                      </div>
-                  ))}
+                  <div className="toc-list">
+                      {[
+                          { id: 'teaching', num: '01.', label: 'Teaching & Learning' },
+                          { id: 'studentSupport', num: '02.', label: 'Mentorship & Support' },
+                          { id: 'research', num: '03.', label: 'Research & Publication' },
+                          { id: 'academic', num: '04.', label: 'Academic Achievements' },
+                          { id: 'institutional', num: '05.', label: 'Institutional Service' }
+                      ].map(mod => (
+                          <div key={mod.id} className={`toc-item ${selectedModules[mod.id] ? 'active' : ''}`} onClick={() => toggleModule(mod.id)}>
+                              <span className="toc-title">
+                                  <span className="toc-num">{mod.num}</span>
+                                  {mod.label}
+                              </span>
+                              <div className="toc-dot-leader"></div>
+                              <div className="toc-status">
+                                  <div className="yn-group">
+                                      <div className="yn-btn yes">YES</div>
+                                      <div className="yn-btn no">NO</div>
+                                  </div>
+                              </div>
+                          </div>
+                      ))}
+                  </div>
               </div>
               
               {/* NODE 3: GENERATE */}
