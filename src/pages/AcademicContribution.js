@@ -121,12 +121,30 @@ const AcademicContribution = () => {
         .pbas-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .pbas-title { font-family: 'Crimson Pro', serif; font-size: 2.2rem; color: #1a4d2e; font-weight: 700; }
         .btn-toggle { background: #1a4d2e; color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.3s; }
-        .table-card { background: white; border-radius: 16px; border: 1px solid #e5e7eb; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden; }
-        .pbas-table { width: 100%; border-collapse: collapse; }
-        .pbas-table th { background: #f8fafc; color: #64748b; padding: 16px; text-align: left; }
-        .pbas-table td { padding: 16px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
-        .btn-edit { color: #166534; font-weight: 700; background: none; border: none; cursor: pointer; margin-right: 15px; }
-        .btn-delete { color: #991b1b; font-weight: 700; background: none; border: none; cursor: pointer; }
+        
+        /* Plaque Layout Styling */
+        .plaque-list { display: flex; flex-direction: column; gap: 20px; }
+        .plaque-card { background: white; border-radius: 16px; border: 1px solid #e2e8f0; border-left: 6px solid #b45309; box-shadow: 0 4px 15px rgba(0,0,0,0.04); display: flex; align-items: stretch; transition: 0.3s; overflow: hidden; position: relative; }
+        .plaque-card:hover { transform: translateX(5px); box-shadow: 0 10px 25px rgba(180,83,9,0.1); border-left-color: #d97706; }
+        
+        .plaque-visual { width: 140px; background: #fffbeb; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; border-right: 1px dashed #fcd34d; }
+        .plaque-icon { font-size: 3rem; color: #d97706; text-shadow: 0 2px 10px rgba(217,119,6,0.2); }
+        .plaque-image { width: 100%; height: 100%; object-fit: cover; }
+        
+        .plaque-content { padding: 24px 30px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 8px; }
+        .plaque-type { text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; font-weight: 800; color: #b45309; }
+        .plaque-title { font-size: 1.4rem; font-weight: 700; color: #1e293b; font-family: 'Playfair Display', serif; margin: 0; }
+        .plaque-org { color: #475569; font-size: 0.95rem; font-weight: 500; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        
+        .plaque-meta { width: 220px; background: #faf8f5; padding: 24px; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; border-left: 1px solid #e2e8f0; flex-shrink: 0; text-align: right; }
+        .plaque-date { font-size: 0.85rem; color: #64748b; font-weight: 600; margin-bottom: 4px; }
+        .plaque-year { font-size: 1.1rem; font-weight: 700; color: #1e293b; }
+        
+        .plaque-actions { display: flex; gap: 12px; margin-top: 16px; }
+        .btn-edit { color: #1a4d2e; font-weight: 600; background: #e8f5e9; border: none; cursor: pointer; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; transition: 0.2s; }
+        .btn-edit:hover { background: #c8e6c9; }
+        .btn-delete { color: #dc2626; font-weight: 600; background: #fef2f2; border: none; cursor: pointer; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; transition: 0.2s; }
+        .btn-delete:hover { background: #fee2e2; }
       `}</style>
       
       <div className="pbas-container">
@@ -150,27 +168,48 @@ const AcademicContribution = () => {
             </div>
         )}
 
-        <div className="table-card">
-          <table className="pbas-table">
-            <thead>
-              <tr><th>Year</th><th>Period</th><th>Type</th><th>Achievement</th><th>Proof</th><th>Action</th></tr>
-            </thead>
-            <tbody>
-              {filteredEntries.map(entry => (
-                <tr key={entry.id}>
-                  <td>{entry.academic_year}</td>
-                  <td><div style={{ fontSize: '0.7rem', color: '#64748b' }}>{entry.from_date} to {entry.to_date}</div></td>
-                  <td><span style={{ padding: "4px 8px", background: "#fef3c7", color: "#92400e", borderRadius: "6px", fontSize: "0.8rem", fontWeight: 600 }}>{entry.contribution_type}</span></td>
-                  <td style={{ fontWeight: 600 }}>{entry.title}</td>
-                  <td>{entry.supporting_image ? <img src={entry.supporting_image.startsWith('http') ? entry.supporting_image : `http://127.0.0.1:8000${entry.supporting_image}`} alt="Proof" style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #e2e8f0' }} /> : <span style={{ color: '#94a3b8' }}>-</span>}</td>
-                  <td>
-                      <button onClick={() => handleEdit(entry)} className="btn-edit">Edit</button>
-                      <button onClick={() => deleteEntry(entry.id)} className="btn-delete">Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="plaque-list">
+          {filteredEntries.map(entry => {
+              const bgUrl = entry.supporting_image ? (entry.supporting_image.startsWith('http') ? entry.supporting_image : `http://127.0.0.1:8000${entry.supporting_image}`) : null;
+              
+              const getIcon = (type) => {
+                  const t = type.toLowerCase();
+                  if(t.includes('award') || t.includes('fellowship')) return '🏆';
+                  if(t.includes('lecture')) return '🎙️';
+                  if(t.includes('paper')) return '📄';
+                  if(t.includes('resource')) return '🌟';
+                  return '🎖️';
+              };
+
+              return (
+              <div key={entry.id} className="plaque-card">
+                  <div className="plaque-visual">
+                      {bgUrl ? (
+                          <img src={bgUrl} alt="Proof" className="plaque-image" />
+                      ) : (
+                          <span className="plaque-icon">{getIcon(entry.contribution_type)}</span>
+                      )}
+                  </div>
+                  
+                  <div className="plaque-content">
+                      <span className="plaque-type">{entry.contribution_type}</span>
+                      <h3 className="plaque-title">{entry.title}</h3>
+                      <div className="plaque-org">
+                          <span>🏢 {entry.organization}</span>
+                          {entry.event_name && <span>• 🎪 {entry.event_name}</span>}
+                      </div>
+                  </div>
+                  
+                  <div className="plaque-meta">
+                      <span className="plaque-date">{entry.from_date} to {entry.to_date}</span>
+                      <span className="plaque-year">{entry.academic_year}</span>
+                      <div className="plaque-actions">
+                          <button onClick={() => handleEdit(entry)} className="btn-edit">✎ Edit</button>
+                          <button onClick={() => deleteEntry(entry.id)} className="btn-delete">🗑 Delete</button>
+                      </div>
+                  </div>
+              </div>
+          )})}
         </div>
       </div>
     </>

@@ -135,16 +135,25 @@ const Research = () => {
         .timeline-content::before { content: ''; position: absolute; left: -9px; top: 28px; width: 16px; height: 16px; background: white; border-left: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; transform: rotate(45deg); transition: border-color 0.2s; }
         .timeline-content:hover::before { border-color: #1a4d2e40; }
         
-        .timeline-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .timeline-content.has-bg { border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .timeline-content.has-bg::before { display: none; }
+        .timeline-content.has-bg .timeline-title { color: white; }
+        .timeline-content.has-bg .timeline-date { background: rgba(255,255,255,0.15); color: white; border-color: transparent; }
+        .timeline-content.has-bg .meta-pill { background: rgba(255,255,255,0.15); color: white; border-color: transparent; }
+        .timeline-content.has-bg .timeline-actions { border-top-color: rgba(255,255,255,0.2); }
+        .timeline-content.has-bg .btn-edit { color: #c8e6c9; }
+        .timeline-content.has-bg .btn-delete { color: #fca5a5; }
+        
+        .timeline-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; position: relative; z-index: 2; }
         .timeline-type { background: #1a4d2e; color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 10px rgba(26,77,46,0.2); }
         .timeline-date { color: #64748b; font-size: 0.85rem; font-weight: 600; background: #f8fafc; padding: 4px 12px; border-radius: 12px; border: 1px solid #e2e8f0; }
-        .timeline-title { font-size: 1.5rem; color: #1e293b; margin: 0 0 20px 0; font-family: 'Playfair Display', serif; font-weight: 800; line-height: 1.3; }
+        .timeline-title { font-size: 1.5rem; color: #1e293b; margin: 0 0 20px 0; font-family: 'Playfair Display', serif; font-weight: 800; line-height: 1.3; position: relative; z-index: 2; }
         
-        .timeline-meta { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+        .timeline-meta { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; position: relative; z-index: 2; }
         .meta-pill { background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; padding: 8px 14px; border-radius: 10px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
         .meta-pill.success { background: #f0fdf4; border-color: #bbf7d0; color: #166534; font-weight: 600; }
         
-        .timeline-actions { display: flex; gap: 20px; border-top: 1px dashed #cbd5e1; padding-top: 20px; }
+        .timeline-actions { display: flex; gap: 20px; border-top: 1px dashed #cbd5e1; padding-top: 20px; position: relative; z-index: 2; }
         .btn-edit { color: #1a4d2e; font-weight: 700; background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 0; font-size: 0.9rem; transition: color 0.2s; }
         .btn-edit:hover { color: #123620; text-decoration: underline; }
         .btn-delete { color: #ef4444; font-weight: 700; background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 0; font-size: 0.9rem; transition: color 0.2s; }
@@ -173,13 +182,23 @@ const Research = () => {
         )}
 
         <div className="timeline-container">
-            {filteredEntries.map((entry, index) => (
+            {filteredEntries.map((entry, index) => {
+                const bgUrl = entry.supporting_image ? (entry.supporting_image.startsWith('http') ? entry.supporting_image : `http://127.0.0.1:8000${entry.supporting_image}`) : null;
+                return (
                 <div key={entry.id} className="timeline-item">
                     <div className="timeline-marker">
                         <div className="timeline-dot"></div>
                         {index !== filteredEntries.length - 1 && <div className="timeline-line"></div>}
                     </div>
-                    <div className="timeline-content">
+                    <div 
+                        className={`timeline-content ${bgUrl ? 'has-bg' : ''}`}
+                        style={bgUrl ? {
+                            backgroundImage: `linear-gradient(to right, rgba(26,77,46,0.95) 0%, rgba(26,77,46,0.6) 100%), url(${bgUrl})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            border: 'none'
+                        } : {}}
+                    >
                         <div className="timeline-header">
                             <span className="timeline-type">{entry.research_type}</span>
                             <span className="timeline-date">🗓 {entry.from_date} to {entry.to_date}</span>
@@ -191,19 +210,13 @@ const Research = () => {
                             <div className="meta-pill"><strong>Academic Year:</strong> {entry.academic_year}</div>
                         </div>
                         
-                        {entry.supporting_image && (
-                            <div style={{ marginBottom: '24px', borderRadius: '12px', overflow: 'hidden', maxHeight: '250px' }}>
-                                <img src={entry.supporting_image.startsWith('http') ? entry.supporting_image : `http://127.0.0.1:8000${entry.supporting_image}`} alt="Proof Document" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            </div>
-                        )}
-                        
                         <div className="timeline-actions">
                             <button onClick={() => handleEdit(entry)} className="btn-edit">✎ Edit Details</button>
                             <button onClick={() => deleteEntry(entry.id)} className="btn-delete">🗑 Remove Entry</button>
                         </div>
                     </div>
                 </div>
-            ))}
+            )})}
         </div>
       </div>
     </>
