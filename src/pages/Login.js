@@ -574,16 +574,10 @@ const Login = () => {
       <div className="login-container">
         <div className="login-wrapper">
 
-          <div className="login-header">
-            <div className="logo-container">
-              <div className="logo">📚</div>
-            </div>
-            <h1 className="app-title">TeachFlow</h1>
-            <p className="app-subtitle">Performance Based Appraisal System</p>
-          </div>
+        
 
           <div className="login-card">
-            <h2 className="login-title">Welcome Back</h2>
+            <h2 className="login-title">TeachFlow</h2>
             <p className="login-description">
               Sign in to access your PBAS dashboard
             </p>

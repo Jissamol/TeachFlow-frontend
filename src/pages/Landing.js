@@ -240,6 +240,20 @@ const Landing = () => {
           .nav-links { display: none; }
         }
 
+        /* Badge */
+        .badge {
+          background: #e8f5e9;
+          color: #1a4d2e;
+          padding: 8px 16px;
+          border-radius: 50px;
+          font-weight: 700;
+          font-size: 0.85rem;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          margin-bottom: 20px;
+          display: inline-block;
+        }
+
         /* Features Grid */
         .features-grid {
           display: grid;
@@ -254,15 +268,37 @@ const Landing = () => {
           background: #ffffff;
           padding: 40px;
           border-radius: 20px;
-          box-shadow: 0 10px 30px rgba(26, 77, 46, 0.08);
-          transition: 0.3s ease;
+          box-shadow: 0 10px 30px rgba(26, 77, 46, 0.05);
+          transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
           border: 1px solid #f1f5f9;
+          border-top: 4px solid #1a4d2e;
           text-align: left;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .feature-card::before {
+          content: "";
+          position: absolute;
+          top: 0; right: 0; bottom: 0; left: 0;
+          background: linear-gradient(180deg, rgba(74, 222, 128, 0.05) 0%, rgba(255,255,255,0) 100%);
+          z-index: 0;
+          opacity: 0;
+          transition: 0.4s ease;
+        }
+
+        .feature-card:hover::before {
+          opacity: 1;
         }
 
         .feature-card:hover {
           transform: translateY(-10px);
           box-shadow: 0 20px 40px rgba(26, 77, 46, 0.12);
+        }
+        
+        .feature-icon, .feature-title, .feature-text {
+          position: relative;
+          z-index: 1;
         }
 
         .feature-icon {
@@ -321,10 +357,24 @@ const Landing = () => {
           position: relative;
         }
 
+        .image-wrapper::before {
+          content: "";
+          position: absolute;
+          top: -20px;
+          bottom: -20px;
+          left: -20px;
+          right: 20px;
+          background: #e8f5e9;
+          border-radius: 20px;
+          z-index: 0;
+        }
+
         .image-wrapper img {
           width: 100%;
           border-radius: 20px;
           box-shadow: 0 20px 50px rgba(26, 77, 46, 0.15);
+          position: relative;
+          z-index: 1;
         }
 
         @media (max-width: 992px) {
@@ -337,6 +387,61 @@ const Landing = () => {
             margin-left: auto;
             margin-right: auto;
           }
+        }
+
+        /* CTA Banner */
+        .cta-container {
+          padding: 100px 60px;
+          background: #ffffff;
+          display: flex;
+          justify-content: center;
+        }
+
+        .cta-banner {
+          background: linear-gradient(135deg, #1a4d2e 0%, #0d2717 100%);
+          width: 100%;
+          max-width: 1200px;
+          border-radius: 30px;
+          padding: 80px 40px;
+          text-align: center;
+          color: #ffffff;
+          box-shadow: 0 25px 50px rgba(26, 77, 46, 0.25);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .cta-banner::before {
+          content: "";
+          position: absolute;
+          top: -50%; left: -50%; width: 200%; height: 200%;
+          background: radial-gradient(circle, rgba(74, 222, 128, 0.1) 0%, rgba(255,255,255,0) 60%);
+          z-index: 0;
+        }
+
+        .cta-banner-content {
+          position: relative;
+          z-index: 1;
+        }
+
+        .cta-banner h2 {
+          font-family: 'Playfair Display', serif;
+          font-size: 3rem;
+          margin-bottom: 20px;
+          color: #ffffff;
+        }
+
+        .cta-banner p {
+          color: #a7f3d0;
+          font-size: 1.1rem;
+          max-width: 600px;
+          margin: 0 auto 40px;
+          line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+          .cta-container { padding: 60px 30px; }
+          .cta-banner { padding: 60px 30px; }
+          .cta-banner h2 { font-size: 2.2rem; }
         }
       `}</style>
       
@@ -374,7 +479,8 @@ const Landing = () => {
         </section>
 
         {/* Features Section */}
-        <section className="section">
+        <section className="section" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f4f9f5 100%)' }}>
+          <span className="badge">Platform Features</span>
           <h2>Why Choose TeachFlow?</h2>
           <p className="section-desc">
             Discover a comprehensive suite of tools designed to streamline academic evaluations and boost institutional efficiency.
@@ -429,15 +535,19 @@ const Landing = () => {
         </section>
 
         {/* Final CTA Section */}
-        <section className="section">
-          <h2>Ready to Transform Your Academic Journey?</h2>
-          <p className="section-desc">
-            Join thousands of educators who are already using TeachFlow to advance their careers and contribute effectively to their institutions.
-          </p>
-          <div style={{ marginTop: '30px' }}>
-            <button className="primary" onClick={() => navigate('/login')}>Create Free Account</button>
+        <div className="cta-container">
+          <div className="cta-banner">
+            <div className="cta-banner-content">
+              <h2>Ready to Transform Your Academic Journey?</h2>
+              <p>
+                Join thousands of educators who are already using TeachFlow to advance their careers and contribute effectively to their institutions.
+              </p>
+              <button className="primary" style={{ background: '#ffffff', color: '#1a4d2e' }} onClick={() => navigate('/login')}>
+                Create Free Account
+              </button>
+            </div>
           </div>
-        </section>
+        </div>
 
       </div>
     </>
