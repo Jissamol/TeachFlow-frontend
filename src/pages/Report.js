@@ -121,41 +121,100 @@ const Report = () => {
   return (
     <>
       <style>{`
-        .report-container { padding: 40px 20px; max-width: 1000px; margin: 0 auto; font-family: 'Work Sans', sans-serif; }
-        .config-card { background: white; border-radius: 20px; padding: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); border: 1px solid #e5e7eb; }
-        .type-btn { flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; background: white; font-weight: 700; color: #64748b; cursor: pointer; transition: 0.2s; font-size: 0.8rem; }
-        .type-btn.active { border-color: #1a4d2e; color: #1a4d2e; background: #f0fdf4; }
-        .btn-generate { width: 100%; background: #1a4d2e; color: white; border: none; padding: 20px; border-radius: 14px; font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: 0.3s; margin-top: 30px; }
-        .selection-item { display: flex; align-items: center; gap: 12px; padding: 15px; border: 1px solid #e5e7eb; border-radius: 12px; cursor: pointer; background: #fff; }
-        .selection-item.active { border-color: #1a4d2e; background: #f0fdf4; }
+        .pipeline-wrapper { min-height: 100vh; background: #faf8f5; padding: 60px 20px; font-family: 'Work Sans', sans-serif; overflow-x: hidden; }
+        .pipeline-title { text-align: center; color: #1a4d2e; font-family: 'Crimson Pro', serif; font-size: 3rem; font-weight: 800; margin-bottom: 60px; letter-spacing: 1px; }
+        
+        .pipeline-container { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; position: relative; }
+        
+        /* The central spine */
+        .spine { position: absolute; top: 0; bottom: 0; left: 50%; width: 4px; background: #e2e8f0; transform: translateX(-50%); z-index: 0; }
+        
+        .pipeline-node { position: relative; z-index: 1; width: 100%; display: flex; flex-direction: column; align-items: center; margin-bottom: 60px; }
+        .node-label { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #1a4d2e; font-weight: 700; background: #faf8f5; padding: 10px 30px; border-radius: 30px; margin-bottom: 30px; border: 2px solid #c8e6c9; box-shadow: 0 4px 15px rgba(26,77,46,0.05); }
+        
+        /* Timeframe Block (Box) */
+        .timeframe-box { background: white; width: 100%; max-width: 500px; padding: 30px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .time-tabs { display: flex; gap: 10px; margin-bottom: 20px; background: #f1f5f9; padding: 6px; border-radius: 12px; }
+        .ttab { flex: 1; padding: 12px; background: transparent; border: none; font-weight: 800; color: #64748b; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 0.9rem; letter-spacing: 0.5px; }
+        .ttab.active { background: white; color: #1a4d2e; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .tinput { width: 100%; padding: 16px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 1.1rem; color: #1e293b; background: #f8fafc; font-weight: 700; outline: none; text-align: center; transition: 0.3s; }
+        .tinput:focus { border-color: #1a4d2e; background: white; }
+        
+        /* Module Strips */
+        .module-strip { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; padding: 24px 40px; border-radius: 100px; margin: 12px 0; cursor: pointer; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid #cbd5e1; background: white; position: relative; overflow: hidden; }
+        .module-strip::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background: #1a4d2e; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); z-index: 0; }
+        .module-strip.active { border-color: #1a4d2e; transform: scale(1.03); box-shadow: 0 15px 30px rgba(26,77,46,0.15); }
+        .module-strip.active::before { width: 100%; }
+        
+        .strip-text { position: relative; z-index: 1; font-size: 1.2rem; font-weight: 800; color: #475569; letter-spacing: 1px; transition: 0.4s; text-transform: uppercase; }
+        .module-strip.active .strip-text { color: white; }
+        
+        .strip-toggle { position: relative; z-index: 1; width: 56px; height: 32px; border-radius: 20px; background: #e2e8f0; transition: 0.4s; border: 2px solid #94a3b8; }
+        .strip-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; background: white; border-radius: 50%; transition: 0.4s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .module-strip.active .strip-toggle { background: #4ade80; border-color: #4ade80; }
+        .module-strip.active .strip-toggle::after { transform: translateX(24px); }
+        
+        /* Generate Button Node */
+        .btn-generate-node { width: 220px; height: 220px; border-radius: 50%; background: linear-gradient(135deg, #1a4d2e, #2d6a4f); color: white; display: flex; justify-content: center; align-items: center; font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 800; cursor: pointer; transition: 0.4s; box-shadow: 0 15px 40px rgba(26,77,46,0.3); border: none; z-index: 2; position: relative; text-align: center; line-height: 1.2; padding: 20px; }
+        .btn-generate-node:hover { transform: scale(1.05); box-shadow: 0 20px 50px rgba(26,77,46,0.4); }
+        .pulse-ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 4px solid #1a4d2e; animation: pulse 2s infinite; z-index: -1; top: 0; left: 0; box-sizing: border-box; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.4); opacity: 0; } }
       `}</style>
 
-      <div className="report-container">
-        <h1 style={{ textAlign: "center", color: "#1a4d2e", fontWeight: 800, marginBottom: 40, fontFamily: 'Crimson Pro' }}>PBAS Report Generator</h1>
-
-        <div className="config-card">
-          <div style={{ display: "flex", gap: 10, marginBottom: 30 }}>
-            {['Yearly', 'Monthly', 'Custom'].map(t => (
-              <button key={t} className={`type-btn ${reportType === t ? 'active' : ''}`} onClick={() => setReportType(t)}>{t.toUpperCase()}</button>
-            ))}
-          </div>
-
-          <div style={{ background: "#f8faf9", padding: 20, borderRadius: 12, marginBottom: 30 }}>
-            {reportType === 'Yearly' && <select style={{ width: "100%", padding: 12 }} value={filterYear} onChange={(e) => setFilterYear(e.target.value)}>{years.map(y => <option key={y} value={y}>{y}</option>)}</select>}
-            {reportType === 'Monthly' && <input type="month" style={{ width: "100%", padding: 12 }} value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)} />}
-            {reportType === 'Custom' && <div style={{ display: "flex", gap: 10 }}><input type="date" style={{ flex: 1, padding: 12 }} value={startDate} onChange={e => setStartDate(e.target.value)}/><input type="date" style={{ flex: 1, padding: 12 }} value={endDate} onChange={e => setEndDate(e.target.value)}/></div>}
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10 }}>
-            {Object.keys(selectedModules).map(key => (
-              <div key={key} className={`selection-item ${selectedModules[key] ? 'active' : ''}`} onClick={() => toggleModule(key)}>
-                <span style={{ fontWeight: 700, fontSize: '0.8rem' }}>{key.toUpperCase()}</span>
+      <div className="pipeline-wrapper">
+          <h1 className="pipeline-title">Report Generator</h1>
+          
+          <div className="pipeline-container">
+              <div className="spine"></div>
+              
+              {/* NODE 1: TIMEFRAME */}
+              <div className="pipeline-node">
+                  <span className="node-label">PHASE 1: TIMEFRAME</span>
+                  <div className="timeframe-box">
+                      <div className="time-tabs">
+                          {['Yearly', 'Monthly', 'Custom'].map(t => (
+                              <button key={t} className={`ttab ${reportType === t ? 'active' : ''}`} onClick={() => setReportType(t)}>{t.toUpperCase()}</button>
+                          ))}
+                      </div>
+                      
+                      {reportType === 'Yearly' && <select className="tinput" value={filterYear} onChange={(e) => setFilterYear(e.target.value)}>{years.map(y => <option key={y} value={y}>{y}</option>)}</select>}
+                      {reportType === 'Monthly' && <input type="month" className="tinput" value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)} />}
+                      {reportType === 'Custom' && (
+                          <div style={{ display: 'flex', gap: '10px' }}>
+                              <input type="date" className="tinput" value={startDate} onChange={e => setStartDate(e.target.value)}/>
+                              <input type="date" className="tinput" value={endDate} onChange={e => setEndDate(e.target.value)}/>
+                          </div>
+                      )}
+                  </div>
               </div>
-            ))}
+              
+              {/* NODE 2: MODULES */}
+              <div className="pipeline-node">
+                  <span className="node-label">PHASE 2: DATA INCLUSION</span>
+                  
+                  {[
+                      { id: 'teaching', label: 'Teaching & Learning' },
+                      { id: 'studentSupport', label: 'Mentorship & Support' },
+                      { id: 'research', label: 'Research & Publication' },
+                      { id: 'academic', label: 'Academic Achievements' },
+                      { id: 'institutional', label: 'Institutional Service' }
+                  ].map(mod => (
+                      <div key={mod.id} className={`module-strip ${selectedModules[mod.id] ? 'active' : ''}`} onClick={() => toggleModule(mod.id)}>
+                          <span className="strip-text">{mod.label}</span>
+                          <div className="strip-toggle"></div>
+                      </div>
+                  ))}
+              </div>
+              
+              {/* NODE 3: GENERATE */}
+              <div className="pipeline-node" style={{ marginBottom: 0 }}>
+                  <button className="btn-generate-node" onClick={generatePDF}>
+                      <div className="pulse-ring"></div>
+                      {loading ? "SYNCING..." : "GENERATE PDF"}
+                  </button>
+              </div>
+              
           </div>
-
-          <button className="btn-generate" onClick={generatePDF}>{loading ? "Syncing..." : "GENERATE PDF REPORT"}</button>
-        </div>
       </div>
     </>
   );
