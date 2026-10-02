@@ -140,7 +140,6 @@ const Dashboard = () => {
         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
             <div>
                 <h1 style={{ fontSize: '1.8rem', fontWeight: 900, color: '#1a4d2e', fontFamily: 'Playfair Display', margin: 0 }}>TeachFlow Intelligence</h1>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Real-time PBAS Analysis & Operational Tracking</p>
             </div>
             <div style={{ background: '#fff', padding: '10px 20px', borderRadius: '50px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center' }}>
                 <span className="status-dot"></span>

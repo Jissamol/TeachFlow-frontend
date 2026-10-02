@@ -7,15 +7,15 @@
 
 /* Sidebar Styling */
 .custom-sidebar {
-  width: 250px;
-  background-color: #1a4d2e; /* --primary from dashboard */
-  color: white;
+  width: 260px;
+  background-color: #ffffff;
+  color: #1e293b;
   display: flex;
   flex-direction: column;
   position: fixed;
   height: 100vh;
   z-index: 1000;
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+  border-right: 1px solid #e2e8f0;
   transition: transform 0.3s ease;
 }
 
@@ -24,16 +24,16 @@
   display: flex;
   align-items: center;
   padding: 0 24px;
-  background-color: #143d24; /* --primary-dark */
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .sidebar-brand {
-  font-family: 'Crimson Pro', serif;
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  font-weight: 800;
   margin: 0;
-  color: #ffffff;
+  color: #1a4d2e;
 }
 
 .sidebar-nav {
@@ -42,7 +42,7 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .sidebar-item {
@@ -52,22 +52,35 @@
 .sidebar-link {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  color: rgba(255, 255, 255, 0.8);
+  padding: 12px 18px;
+  color: #64748b;
   text-decoration: none;
-  border-radius: 12px;
-  transition: all 0.3s ease;
+  border-radius: 10px;
+  transition: all 0.2s ease;
   font-weight: 500;
+  font-size: 0.95rem;
 }
 
-.sidebar-link:hover, .sidebar-item.active .sidebar-link {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+.sidebar-link:hover {
+  background-color: #f8fafc;
+  color: #1e293b;
 }
 
+.sidebar-item.active .sidebar-link {
+  background-color: #e8f5e9;
+  color: #1a4d2e;
+  font-weight: 600;
+}
+
+/* Optional icon styling if added later */
 .sidebar-icon {
-  margin-right: 16px;
+  margin-right: 14px;
   font-size: 1.2rem;
+  opacity: 0.8;
+}
+
+.sidebar-item.active .sidebar-icon {
+  opacity: 1;
 }
 
 /* Main Wrapper and Area */
