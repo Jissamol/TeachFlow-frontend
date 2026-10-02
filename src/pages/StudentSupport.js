@@ -112,7 +112,7 @@ const StudentSupport = () => {
     const matchesSearch = entry.activity_name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesYear = filterYear === "All" || entry.academic_year === filterYear;
     return matchesSearch && matchesYear;
-  });
+  }).sort((a, b) => new Date(b.from_date) - new Date(a.from_date));
 
   return (
     <>
@@ -168,7 +168,7 @@ const StudentSupport = () => {
                   <td>{entry.activity_name}</td>
                   <td>{entry.target_audience}</td>
                   <td style={{ fontWeight: 700, color: "#1a4d2e" }}>{entry.hours_spent}</td>
-                  <td>{entry.supporting_image ? "✅" : "❌"}</td>
+                  <td>{entry.supporting_image ? <img src={entry.supporting_image.startsWith('http') ? entry.supporting_image : `http://127.0.0.1:8000${entry.supporting_image}`} alt="Proof" style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #e2e8f0' }} /> : <span style={{ color: '#94a3b8' }}>-</span>}</td>
                   <td>
                       <button onClick={() => handleEdit(entry)} className="btn-edit">Edit</button>
                       <button onClick={() => deleteEntry(entry.id)} className="btn-delete">Delete</button>
