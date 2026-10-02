@@ -2,91 +2,128 @@
 .layout-container {
   display: flex;
   min-height: 100vh;
-  font-family: 'Work Sans', sans-serif;
+  font-family: 'Outfit', sans-serif;
+  background-color: #f8fafc;
+}
+
+.sidebar-wrapper {
+  position: fixed;
+  width: 280px;
+  height: 100vh;
+  padding: 20px;
+  z-index: 1000;
+  pointer-events: none;
 }
 
 /* Sidebar Styling */
 .custom-sidebar {
-  width: 260px;
-  background-color: #ffffff;
-  color: #1e293b;
+  width: 100%;
+  height: 100%;
+  background: #e8f5e9; /* Light green background */
+  color: #1a4d2e;
   display: flex;
   flex-direction: column;
-  position: fixed;
-  height: 100vh;
-  z-index: 1000;
-  border-right: 1px solid #e2e8f0;
-  transition: transform 0.3s ease;
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(26, 77, 46, 0.08);
+  overflow: hidden;
+  pointer-events: auto;
+  position: relative;
+}
+
+.custom-sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 200px;
+  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.5), transparent 70%);
+  pointer-events: none;
 }
 
 .sidebar-header {
-  height: 72px;
+  height: 80px;
   display: flex;
   align-items: center;
-  padding: 0 24px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 0 30px;
+  border-bottom: 1px solid rgba(26, 77, 46, 0.1);
+  z-index: 2;
 }
 
 .sidebar-brand {
   font-family: 'Playfair Display', serif;
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   font-weight: 800;
   margin: 0;
   color: #1a4d2e;
+  letter-spacing: -0.5px;
 }
 
 .sidebar-nav {
   list-style: none;
-  padding: 24px 0;
+  padding: 24px 16px;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  overflow-y: auto;
+  z-index: 2;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .sidebar-item {
-  padding: 0 16px;
+  /* Using padding on link instead */
 }
 
 .sidebar-link {
   display: flex;
   align-items: center;
-  padding: 12px 18px;
-  color: #64748b;
+  padding: 14px 18px;
+  color: #2d6a4f;
   text-decoration: none;
-  border-radius: 10px;
-  transition: all 0.2s ease;
+  border-radius: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-weight: 500;
   font-size: 0.95rem;
 }
 
 .sidebar-link:hover {
-  background-color: #f8fafc;
-  color: #1e293b;
+  background-color: rgba(26, 77, 46, 0.06);
+  color: #1a4d2e;
+  transform: translateX(4px);
 }
 
 .sidebar-item.active .sidebar-link {
-  background-color: #e8f5e9;
-  color: #1a4d2e;
+  background-color: #1a4d2e;
+  color: #ffffff;
+  box-shadow: 0 6px 15px rgba(26, 77, 46, 0.2);
   font-weight: 600;
 }
 
 /* Optional icon styling if added later */
 .sidebar-icon {
-  margin-right: 14px;
-  font-size: 1.2rem;
-  opacity: 0.8;
+  margin-right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.sidebar-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2px;
 }
 
 .sidebar-item.active .sidebar-icon {
-  opacity: 1;
+  color: #4ade80;
 }
 
 /* Main Wrapper and Area */
 .main-wrapper {
   flex-grow: 1;
-  margin-left: 250px;
+  margin-left: 280px; /* Accounts for sidebar width + 2x padding */
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -126,30 +163,31 @@
 }
 
 .logout-btn {
-  background: #f4a261; /* --accent */
+  background: #1a4d2e; /* Brand primary */
   color: white;
   border: none;
-  padding: 8px 20px;
-  border-radius: 8px;
+  padding: 8px 24px;
+  border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .logout-btn:hover {
-  background: #e76f51; /* --accent-hover */
+  background: #123620; /* Brand darker */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(26, 77, 46, 0.2);
 }
 
 /* Content Area */
 .main-content {
   flex-grow: 1;
-  /* background: linear-gradient(135deg, #faf8f5 0%, #e8ebe9 100%); Optional, let pages handle it, usually good practice to have global bg here */
   position: relative;
 }
 
 /* Responsive Overrides */
 @media (max-width: 768px) {
-  .custom-sidebar {
+  .sidebar-wrapper {
     transform: translateX(-100%);
   }
   
