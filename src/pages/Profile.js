@@ -14,6 +14,7 @@ const Profile = () => {
   });
   const [profileMsg, setProfileMsg] = useState({ type: "", text: "" });
   const [profilePicBase64, setProfilePicBase64] = useState(localStorage.getItem("profile_picture") || null);
+  const [profilePicFile, setProfilePicFile] = useState(null);
 
   // Password Form State
   const [passwordData, setPasswordData] = useState({
@@ -53,6 +54,11 @@ const Profile = () => {
                 phone: data.phone || "",
                 email: data.email || ""
             });
+            if (data.profile_picture) {
+                const picUrl = data.profile_picture.startsWith('http') ? data.profile_picture : `http://127.0.0.1:8000${data.profile_picture}`;
+                setProfilePicBase64(picUrl);
+                localStorage.setItem("profile_picture", picUrl);
+            }
         }
     } catch (err) {
         console.error("Failed to fetch profile", err);
@@ -67,6 +73,7 @@ const Profile = () => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setProfilePicFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfilePicBase64(reader.result);
@@ -84,14 +91,22 @@ const Profile = () => {
   const updateProfile = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("access_token");
+    
+    const formData = new FormData();
+    formData.append("full_name", profileData.full_name);
+    formData.append("department", profileData.department);
+    formData.append("phone", profileData.phone);
+    if (profilePicFile) {
+        formData.append("profile_picture", profilePicFile);
+    }
+
     try {
         const res = await fetch("http://127.0.0.1:8000/api/accounts/profile/", {
             method: "PUT",
             headers: {
-                "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
-            body: JSON.stringify(profileData)
+            body: formData
         });
         const data = await res.json();
         if (res.ok) {
@@ -313,19 +328,19 @@ const Profile = () => {
             width: 100%; 
             background: #1a4d2e; 
             color: white; 
-            padding: 16px; 
+            padding: 8px 24px; 
             text-align: center; 
             font-weight: 800; 
             text-transform: uppercase; 
             letter-spacing: 2px; 
             border: none; 
             cursor: pointer; 
-            border-radius: 4px; 
-            transition: 0.3s; 
+            border-radius: 10px; 
+            transition: all 0.2s ease; 
             font-family: 'Work Sans', sans-serif;
             font-size: 0.9rem;
         }
-        .seal-btn:hover { background: #123620; box-shadow: 0 4px 10px rgba(26,77,46,0.3); }
+        .seal-btn:hover { background: #123620; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(26, 77, 46, 0.2); }
 
         /* Right Form */
         .info-col { 

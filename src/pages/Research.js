@@ -135,15 +135,8 @@ const Research = () => {
         .timeline-content::before { content: ''; position: absolute; left: -9px; top: 28px; width: 16px; height: 16px; background: white; border-left: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; transform: rotate(45deg); transition: border-color 0.2s; }
         .timeline-content:hover::before { border-color: #1a4d2e40; }
         
-        .timeline-content.has-bg { border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .timeline-content.has-bg { border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .timeline-content.has-bg::before { display: none; }
-        .timeline-content.has-bg .timeline-title { color: white; }
-        .timeline-content.has-bg .timeline-date { background: rgba(255,255,255,0.15); color: white; border-color: transparent; }
-        .timeline-content.has-bg .meta-pill { background: rgba(255,255,255,0.15); color: white; border-color: transparent; }
-        .timeline-content.has-bg .timeline-actions { border-top-color: rgba(255,255,255,0.2); }
-        .timeline-content.has-bg .btn-edit { color: #c8e6c9; }
-        .timeline-content.has-bg .btn-delete { color: #fca5a5; }
-        
         .timeline-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; position: relative; z-index: 2; }
         .timeline-type { background: #1a4d2e; color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 10px rgba(26,77,46,0.2); }
         .timeline-date { color: #64748b; font-size: 0.85rem; font-weight: 600; background: #f8fafc; padding: 4px 12px; border-radius: 12px; border: 1px solid #e2e8f0; }
@@ -193,7 +186,7 @@ const Research = () => {
                     <div 
                         className={`timeline-content ${bgUrl ? 'has-bg' : ''}`}
                         style={bgUrl ? {
-                            backgroundImage: `linear-gradient(to right, rgba(26,77,46,0.95) 0%, rgba(26,77,46,0.6) 100%), url(${bgUrl})`,
+                            backgroundImage: `linear-gradient(to right, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.75) 100%), url(${bgUrl})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                             border: 'none'
