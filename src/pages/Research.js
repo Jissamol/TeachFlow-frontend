@@ -108,7 +108,8 @@ const Research = () => {
     } catch (err) {}
   };
 
-  const filteredEntries = entries.filter(entry => entry.title.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredEntries = entries.filter(entry => entry.title.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => new Date(b.from_date) - new Date(a.from_date));
 
   return (
     <>
@@ -121,12 +122,35 @@ const Research = () => {
         .summary-val { font-size: 1.8rem; font-weight: 800; color: #1a4d2e; font-family: 'Crimson Pro', serif; }
         .summary-label { color: #6b7280; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; }
         .btn-toggle { background: #1a4d2e; color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.3s; }
-        .table-card { background: white; border-radius: 16px; border: 1px solid #e5e7eb; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden; }
-        .pbas-table { width: 100%; border-collapse: collapse; }
-        .pbas-table th { background: #f8fafc; color: #64748b; padding: 16px; text-align: left; }
-        .pbas-table td { padding: 16px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
-        .btn-edit { color: #166534; font-weight: 700; background: none; border: none; cursor: pointer; margin-right: 15px; }
-        .btn-delete { color: #991b1b; font-weight: 700; background: none; border: none; cursor: pointer; }
+        
+        /* New Timeline Layout Styling */
+        .timeline-container { display: flex; flex-direction: column; gap: 0; margin-top: 20px; }
+        .timeline-item { display: flex; gap: 24px; }
+        .timeline-marker { display: flex; flex-direction: column; align-items: center; width: 24px; margin-top: 4px; }
+        .timeline-dot { width: 20px; height: 20px; background: white; border: 5px solid #1a4d2e; border-radius: 50%; z-index: 2; box-shadow: 0 0 0 4px #e8f5e9; flex-shrink: 0; }
+        .timeline-line { width: 2px; background: #cbd5e1; flex-grow: 1; margin: 8px 0; border-radius: 2px; }
+        
+        .timeline-content { background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 28px; flex-grow: 1; margin-bottom: 32px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: transform 0.2s, box-shadow 0.2s; position: relative; }
+        .timeline-content:hover { transform: translateX(6px); box-shadow: 0 15px 30px rgba(26,77,46,0.06); border-color: #1a4d2e40; }
+        .timeline-content::before { content: ''; position: absolute; left: -9px; top: 28px; width: 16px; height: 16px; background: white; border-left: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; transform: rotate(45deg); transition: border-color 0.2s; }
+        .timeline-content:hover::before { border-color: #1a4d2e40; }
+        
+        .timeline-content.has-bg { border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .timeline-content.has-bg::before { display: none; }
+        .timeline-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; position: relative; z-index: 2; }
+        .timeline-type { background: #1a4d2e; color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; box-shadow: 0 4px 10px rgba(26,77,46,0.2); }
+        .timeline-date { color: #64748b; font-size: 0.85rem; font-weight: 600; background: #f8fafc; padding: 4px 12px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .timeline-title { font-size: 1.5rem; color: #1e293b; margin: 0 0 20px 0; font-family: 'Playfair Display', serif; font-weight: 800; line-height: 1.3; position: relative; z-index: 2; }
+        
+        .timeline-meta { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; position: relative; z-index: 2; }
+        .meta-pill { background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; padding: 8px 14px; border-radius: 10px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
+        .meta-pill.success { background: #f0fdf4; border-color: #bbf7d0; color: #166534; font-weight: 600; }
+        
+        .timeline-actions { display: flex; gap: 20px; border-top: 1px dashed #cbd5e1; padding-top: 20px; position: relative; z-index: 2; }
+        .btn-edit { color: #1a4d2e; font-weight: 700; background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 0; font-size: 0.9rem; transition: color 0.2s; }
+        .btn-edit:hover { color: #123620; text-decoration: underline; }
+        .btn-delete { color: #ef4444; font-weight: 700; background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 0; font-size: 0.9rem; transition: color 0.2s; }
+        .btn-delete:hover { color: #b91c1c; text-decoration: underline; }
       `}</style>
       
       <div className="pbas-container">
@@ -150,27 +174,42 @@ const Research = () => {
             </div>
         )}
 
-        <div className="table-card">
-          <table className="pbas-table">
-            <thead>
-              <tr><th>Year</th><th>Period</th><th>Type</th><th>Title</th><th>Proof</th><th>Action</th></tr>
-            </thead>
-            <tbody>
-              {filteredEntries.map(entry => (
-                <tr key={entry.id}>
-                  <td>{entry.academic_year}</td>
-                  <td><div style={{ fontSize: '0.7rem', color: '#64748b' }}>{entry.from_date} to {entry.to_date}</div></td>
-                  <td><span style={{ padding: "4px 8px", background: "#f0fdf4", color: "#166534", borderRadius: "6px", fontSize: "0.8rem", fontWeight: 600 }}>{entry.research_type}</span></td>
-                  <td style={{ fontWeight: 600 }}>{entry.title}</td>
-                  <td>{entry.supporting_image ? "✅" : "❌"}</td>
-                  <td>
-                      <button onClick={() => handleEdit(entry)} className="btn-edit">Edit</button>
-                      <button onClick={() => deleteEntry(entry.id)} className="btn-delete">Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="timeline-container">
+            {filteredEntries.map((entry, index) => {
+                const bgUrl = entry.supporting_image ? (entry.supporting_image.startsWith('http') ? entry.supporting_image : `http://127.0.0.1:8000${entry.supporting_image}`) : null;
+                return (
+                <div key={entry.id} className="timeline-item">
+                    <div className="timeline-marker">
+                        <div className="timeline-dot"></div>
+                        {index !== filteredEntries.length - 1 && <div className="timeline-line"></div>}
+                    </div>
+                    <div 
+                        className={`timeline-content ${bgUrl ? 'has-bg' : ''}`}
+                        style={bgUrl ? {
+                            backgroundImage: `linear-gradient(to right, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.75) 100%), url(${bgUrl})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            border: 'none'
+                        } : {}}
+                    >
+                        <div className="timeline-header">
+                            <span className="timeline-type">{entry.research_type}</span>
+                            <span className="timeline-date">🗓 {entry.from_date} to {entry.to_date}</span>
+                        </div>
+                        
+                        <h3 className="timeline-title">{entry.title}</h3>
+                        
+                        <div className="timeline-meta">
+                            <div className="meta-pill"><strong>Academic Year:</strong> {entry.academic_year}</div>
+                        </div>
+                        
+                        <div className="timeline-actions">
+                            <button onClick={() => handleEdit(entry)} className="btn-edit">✎ Edit Details</button>
+                            <button onClick={() => deleteEntry(entry.id)} className="btn-delete">🗑 Remove Entry</button>
+                        </div>
+                    </div>
+                </div>
+            )})}
         </div>
       </div>
     </>

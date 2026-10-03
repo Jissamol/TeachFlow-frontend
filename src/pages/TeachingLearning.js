@@ -22,7 +22,8 @@ const TeachingLearning = () => {
     classes_taught: "",
     from_date: "",
     to_date: "",
-    description: ""
+    description: "",
+    supporting_image: null
   });
 
   useEffect(() => {
@@ -45,6 +46,10 @@ const TeachingLearning = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleFileChange = (e) => {
+    setFormData(prev => ({ ...prev, supporting_image: e.target.files[0] }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -53,22 +58,27 @@ const TeachingLearning = () => {
       ? `http://127.0.0.1:8000/api/pbas/teaching/${editingId}/`
       : "http://127.0.0.1:8000/api/pbas/teaching/";
     
+    const data = new FormData();
+    data.append("academic_year", formData.academic_year);
+    data.append("course_name", formData.course_name);
+    data.append("course_level", formData.course_level);
+    data.append("mode_of_teaching", formData.mode_of_teaching);
+    data.append("classes_assigned", parseInt(formData.classes_assigned) || 0);
+    data.append("classes_taught", parseInt(formData.classes_taught) || 0);
+    if (formData.from_date) data.append("from_date", formData.from_date);
+    if (formData.to_date) data.append("to_date", formData.to_date);
+    if (formData.description) data.append("description", formData.description);
+    if (formData.supporting_image instanceof File) data.append("supporting_image", formData.supporting_image);
+
     try {
       const res = await fetch(url, {
         method: editingId ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({
-            ...formData,
-            classes_assigned: parseInt(formData.classes_assigned) || 0,
-            classes_taught: parseInt(formData.classes_taught) || 0,
-            from_date: formData.from_date || null,
-            to_date: formData.to_date || null,
-            description: formData.description || ""
-        })
+        headers: { "Authorization": `Bearer ${token}` },
+        body: data
       });
       if (res.ok) {
         setMsg({ type: "success", text: "Synced with Database!" });
-        setFormData({ academic_year: "2024-2025", course_name: "", course_level: "UG", mode_of_teaching: "Lecture", classes_assigned: "", classes_taught: "", from_date: "", to_date: "", description: "" });
+        setFormData({ academic_year: "2024-2025", course_name: "", course_level: "UG", mode_of_teaching: "Lecture", classes_assigned: "", classes_taught: "", from_date: "", to_date: "", description: "", supporting_image: null });
         setShowForm(false); setEditingId(null); fetchEntries();
       }
     } catch (err) {} finally { setLoading(false); }
@@ -86,7 +96,7 @@ const TeachingLearning = () => {
   };
 
   const handleEdit = (entry) => {
-    setFormData({ ...entry, from_date: entry.from_date || "", to_date: entry.to_date || "" });
+    setFormData({ ...entry, supporting_image: null, from_date: entry.from_date || "", to_date: entry.to_date || "" });
     setEditingId(entry.id); setShowForm(true);
   };
 
@@ -101,7 +111,8 @@ const TeachingLearning = () => {
         classes_taught: "",
         from_date: "",
         to_date: "",
-        description: ""
+        description: "",
+        supporting_image: null
       });
       setEditingId(null);
     }
@@ -113,7 +124,7 @@ const TeachingLearning = () => {
     const matchesYear = filterYear === "All" || entry.academic_year === filterYear;
     const matchesLevel = filterLevel === "All" || entry.course_level === filterLevel;
     return matchesSearch && matchesYear && matchesLevel;
-  });
+  }).sort((a, b) => new Date(b.from_date) - new Date(a.from_date));
 
   const uniqueYears = ["All", ...new Set(entries.map(e => e.academic_year))];
 
@@ -132,13 +143,25 @@ const TeachingLearning = () => {
         .filter-label { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
         .filter-input { padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; min-width: 150px; }
         .btn-toggle { background: #1a4d2e; color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.3s; }
-        .table-card { background: white; border-radius: 16px; border: 1px solid #e5e7eb; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden; }
-        .pbas-table { width: 100%; border-collapse: collapse; }
-        .pbas-table th { background: #f8fafc; color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; padding: 16px; text-align: left; }
-        .pbas-table td { padding: 16px; border-bottom: 1px solid #f1f5f9; color: #1e293b; font-size: 0.95rem; }
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; background: #dcfce7; color: #166534; }
-        .btn-edit { color: #166534; font-weight: 700; background: none; border: none; cursor: pointer; margin-right: 15px; }
-        .btn-delete { color: #991b1b; font-weight: 700; background: none; border: none; cursor: pointer; }
+        
+        /* New Course Cards Masonry Styling */
+        .course-grid { column-count: auto; column-width: 320px; column-gap: 24px; }
+        .course-card { background: white; border-radius: 20px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(26,77,46,0.03); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; break-inside: avoid; margin-bottom: 24px; }
+        .course-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(26,77,46,0.08); }
+        .course-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+        .course-level-badge { background: #e8f5e9; color: #1a4d2e; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; border: 1px solid rgba(26,77,46,0.1); }
+        .course-actions { display: flex; gap: 8px; }
+        .icon-btn { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; font-size: 0.9rem; padding: 6px; color: #64748b; transition: all 0.2s; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; }
+        .icon-btn:hover { background: white; }
+        .icon-btn.edit:hover { color: #1a4d2e; border-color: #1a4d2e; }
+        .icon-btn.delete:hover { color: #ef4444; border-color: #ef4444; }
+        .course-name { font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0 0 12px 0; line-height: 1.3; font-family: 'Playfair Display', serif; }
+        .course-meta { display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; color: #64748b; margin-bottom: 24px; font-weight: 500; }
+        .course-meta-item { display: flex; align-items: center; gap: 8px; }
+        .course-progress { margin-top: auto; padding-top: 20px; border-top: 1px dashed #e2e8f0; }
+        .progress-labels { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 10px; }
+        .progress-bar-bg { width: 100%; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #1a4d2e, #4ade80); border-radius: 4px; transition: width 1s ease; }
       `}</style>
       
       <div className="pbas-container">
@@ -162,10 +185,12 @@ const TeachingLearning = () => {
                         <div className="filter-group"><label className="filter-label">Academic Year</label><input type="text" name="academic_year" value={formData.academic_year} onChange={handleChange} className="filter-input" required /></div>
                         <div className="filter-group"><label className="filter-label">Course Name</label><input type="text" name="course_name" value={formData.course_name} onChange={handleChange} className="filter-input" required /></div>
                         <div className="filter-group"><label className="filter-label">Level</label><select name="course_level" value={formData.course_level} onChange={handleChange} className="filter-input"><option value="UG">Undergraduate</option><option value="PG">Postgraduate</option><option value="Other">Other</option></select></div>
+                        <div className="filter-group"><label className="filter-label">Mode</label><select name="mode_of_teaching" value={formData.mode_of_teaching} onChange={handleChange} className="filter-input"><option value="Lecture">Lecture</option><option value="Practical">Practical</option><option value="Tutorial">Tutorial</option></select></div>
                         <div className="filter-group"><label className="filter-label">From Date</label><input type="date" name="from_date" value={formData.from_date} onChange={handleChange} className="filter-input" required /></div>
                         <div className="filter-group"><label className="filter-label">To Date</label><input type="date" name="to_date" value={formData.to_date} onChange={handleChange} className="filter-input" required /></div>
                         <div className="filter-group"><label className="filter-label">Assigned</label><input type="number" name="classes_assigned" value={formData.classes_assigned} onChange={handleChange} className="filter-input" required /></div>
                         <div className="filter-group"><label className="filter-label">Taught</label><input type="number" name="classes_taught" value={formData.classes_taught} onChange={handleChange} className="filter-input" required /></div>
+                        <div className="filter-group" style={{ gridColumn: "span 2" }}><label className="filter-label">Proof (Optional)</label><input type="file" onChange={handleFileChange} className="filter-input" /></div>
                         <div className="filter-group" style={{ gridColumn: "span 2" }}><label className="filter-label">Description</label><textarea name="description" value={formData.description} onChange={handleChange} className="filter-input" style={{ minHeight: "80px" }} placeholder="Briefly describe the course or your role..." /></div>
                     </div>
                     <button type="submit" className="btn-toggle" style={{ marginTop: "20px", width: "100%" }}>{loading ? 'Processing...' : 'Sync with Database'}</button>
@@ -179,28 +204,54 @@ const TeachingLearning = () => {
             <div className="filter-group"><label className="filter-label">Level</label><select value={filterLevel} onChange={(e) => setFilterLevel(e.target.value)} className="filter-input"><option value="All">All Levels</option><option value="UG">UG</option><option value="PG">PG</option></select></div>
         </div>
 
-        <div className="table-card">
-          <table className="pbas-table">
-            <thead>
-              <tr><th>Year</th><th>Validity</th><th>Course</th><th>Level</th><th>Assigned</th><th>Taught</th><th style={{ textAlign: "right" }}>Action</th></tr>
-            </thead>
-            <tbody>
-              {filteredEntries.map(entry => (
-                <tr key={entry.id}>
-                  <td style={{ fontWeight: 600 }}>{entry.academic_year}</td>
-                  <td><div style={{ fontSize: '0.75rem', color: '#64748b' }}>{entry.from_date} to {entry.to_date}</div></td>
-                  <td>{entry.course_name}</td>
-                  <td><span className="badge">{entry.course_level}</span></td>
-                  <td>{entry.classes_assigned}</td>
-                  <td><span style={{ color: "#1a4d2e", fontWeight: 700 }}>{entry.classes_taught}</span></td>
-                  <td style={{ textAlign: "right" }}>
-                    <button onClick={() => handleEdit(entry)} className="btn-edit">Edit</button>
-                    <button onClick={() => deleteEntry(entry.id)} className="btn-delete">Remove</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="course-grid">
+          {filteredEntries.map(entry => {
+            const assigned = parseInt(entry.classes_assigned) || 0;
+            const taught = parseInt(entry.classes_taught) || 0;
+            const progress = assigned > 0 ? (taught / assigned) * 100 : 0;
+            
+            return (
+              <div key={entry.id} className="course-card">
+                  <div className="course-card-header">
+                      <span className="course-level-badge">{entry.course_level}</span>
+                      <div className="course-actions">
+                          <button onClick={() => handleEdit(entry)} className="icon-btn edit" title="Edit">✎</button>
+                          <button onClick={() => deleteEntry(entry.id)} className="icon-btn delete" title="Delete">🗑</button>
+                      </div>
+                  </div>
+                  
+                  <h3 className="course-name">{entry.course_name}</h3>
+                  
+                  <div className="course-meta">
+                      <div className="course-meta-item">
+                          <span>📅</span> {entry.academic_year}
+                      </div>
+                      <div className="course-meta-item">
+                          <span>⏱</span> {entry.from_date} to {entry.to_date}
+                      </div>
+                      <div className="course-meta-item">
+                          <span>👨‍🏫</span> {entry.mode_of_teaching || 'Lecture'}
+                      </div>
+                  </div>
+                  
+                  {entry.supporting_image && (
+                      <div style={{ marginBottom: '16px', borderRadius: '12px', overflow: 'hidden', height: '140px' }}>
+                          <img src={entry.supporting_image.startsWith('http') ? entry.supporting_image : `http://127.0.0.1:8000${entry.supporting_image}`} alt="Proof" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                  )}
+                  
+                  <div className="course-progress">
+                      <div className="progress-labels">
+                          <span>Classes Completed</span>
+                          <span style={{ color: '#1a4d2e' }}>{taught} / {assigned}</span>
+                      </div>
+                      <div className="progress-bar-bg">
+                          <div className="progress-bar-fill" style={{ width: `${Math.min(100, progress)}%` }}></div>
+                      </div>
+                  </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </>

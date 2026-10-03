@@ -112,7 +112,7 @@ const StudentSupport = () => {
     const matchesSearch = entry.activity_name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesYear = filterYear === "All" || entry.academic_year === filterYear;
     return matchesSearch && matchesYear;
-  });
+  }).sort((a, b) => new Date(b.from_date) - new Date(a.from_date));
 
   return (
     <>
@@ -125,12 +125,30 @@ const StudentSupport = () => {
         .summary-val { font-size: 1.8rem; font-weight: 800; color: #1a4d2e; font-family: 'Crimson Pro', serif; }
         .summary-label { color: #6b7280; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; }
         .btn-toggle { background: #1a4d2e; color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.3s; }
-        .table-card { background: white; border-radius: 16px; border: 1px solid #e5e7eb; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow: hidden; }
-        .pbas-table { width: 100%; border-collapse: collapse; }
-        .pbas-table th { background: #f8fafc; color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; padding: 16px; text-align: left; }
-        .pbas-table td { padding: 16px; border-bottom: 1px solid #f1f5f9; color: #1e293b; font-size: 0.95rem; }
-        .btn-edit { color: #166534; font-weight: 700; background: none; border: none; cursor: pointer; margin-right: 15px; }
-        .btn-delete { color: #991b1b; font-weight: 700; background: none; border: none; cursor: pointer; }
+        
+        /* Metric Card Grid */
+        .metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+        .metric-card { background: white; border-radius: 20px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.03); display: flex; flex-direction: column; position: relative; transition: 0.3s; }
+        .metric-card:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(26,77,46,0.08); }
+        
+        .metric-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+        .metric-title { font-size: 1.35rem; font-weight: 700; color: #1e293b; font-family: 'Playfair Display', serif; line-height: 1.3; }
+        .metric-audience { font-size: 0.8rem; color: #64748b; font-weight: 600; margin-top: 8px; display: inline-block; background: #f1f5f9; padding: 4px 10px; border-radius: 6px; }
+        
+        .metric-hours-circle { width: 75px; height: 75px; border-radius: 50%; background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border: 4px solid white; box-shadow: 0 4px 15px rgba(26,77,46,0.15); display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 16px; color: #1a4d2e; }
+        .metric-hours-val { font-size: 1.8rem; font-weight: 800; line-height: 1; font-family: 'Crimson Pro', serif; }
+        .metric-hours-lbl { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; margin-top: 2px; }
+
+        .metric-details { display: flex; flex-direction: column; gap: 12px; flex-grow: 1; }
+        .metric-row { display: flex; align-items: center; gap: 12px; font-size: 0.9rem; color: #475569; background: #f8fafc; padding: 12px 16px; border-radius: 12px; font-weight: 500; border: 1px solid #f1f5f9; }
+        .metric-icon { color: #1a4d2e; font-size: 1.2rem; }
+        
+        .metric-footer { margin-top: 24px; padding-top: 20px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+        
+        .btn-edit { color: #1a4d2e; font-weight: 600; background: #e8f5e9; border: none; cursor: pointer; padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; transition: 0.2s; }
+        .btn-edit:hover { background: #c8e6c9; }
+        .btn-delete { color: #dc2626; font-weight: 600; background: #fef2f2; border: none; cursor: pointer; padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; transition: 0.2s; }
+        .btn-delete:hover { background: #fee2e2; }
       `}</style>
       
       <div className="pbas-container">
@@ -155,28 +173,45 @@ const StudentSupport = () => {
             </div>
         )}
 
-        <div className="table-card">
-          <table className="pbas-table">
-            <thead>
-              <tr><th>Year</th><th>Period</th><th>Activity</th><th>Target</th><th>Hours</th><th>Proof</th><th>Action</th></tr>
-            </thead>
-            <tbody>
-              {filteredEntries.map(entry => (
-                <tr key={entry.id}>
-                  <td>{entry.academic_year}</td>
-                  <td><div style={{ fontSize: '0.7rem', color: '#64748b' }}>{entry.from_date} - {entry.to_date}</div></td>
-                  <td>{entry.activity_name}</td>
-                  <td>{entry.target_audience}</td>
-                  <td style={{ fontWeight: 700, color: "#1a4d2e" }}>{entry.hours_spent}</td>
-                  <td>{entry.supporting_image ? "✅" : "❌"}</td>
-                  <td>
-                      <button onClick={() => handleEdit(entry)} className="btn-edit">Edit</button>
-                      <button onClick={() => deleteEntry(entry.id)} className="btn-delete">Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="metric-grid">
+          {filteredEntries.map(entry => (
+              <div key={entry.id} className="metric-card">
+                  <div className="metric-header">
+                      <div>
+                          <h3 className="metric-title">{entry.activity_name}</h3>
+                          <span className="metric-audience">🎯 Target: {entry.target_audience}</span>
+                      </div>
+                      <div className="metric-hours-circle">
+                          <span className="metric-hours-val">{entry.hours_spent}</span>
+                          <span className="metric-hours-lbl">Hrs</span>
+                      </div>
+                  </div>
+                  
+                  <div className="metric-details">
+                      <div className="metric-row">
+                          <span className="metric-icon">🗓️</span>
+                          <div><strong>Year:</strong> {entry.academic_year}</div>
+                      </div>
+                      <div className="metric-row">
+                          <span className="metric-icon">⏱️</span>
+                          <div><strong>Period:</strong> {entry.from_date} to {entry.to_date}</div>
+                      </div>
+                      
+                      {entry.supporting_image && (
+                          <div style={{ marginTop: '12px', borderRadius: '12px', overflow: 'hidden', height: '140px', border: '1px solid #e2e8f0' }}>
+                              <img src={entry.supporting_image.startsWith('http') ? entry.supporting_image : `http://127.0.0.1:8000${entry.supporting_image}`} alt="Proof" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                      )}
+                  </div>
+                  
+                  <div className="metric-footer">
+                      <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+                          <button onClick={() => handleEdit(entry)} className="btn-edit" style={{ flex: 1 }}>✎ Edit</button>
+                          <button onClick={() => deleteEntry(entry.id)} className="btn-delete" style={{ flex: 1 }}>🗑 Delete</button>
+                      </div>
+                  </div>
+              </div>
+          ))}
         </div>
       </div>
     </>

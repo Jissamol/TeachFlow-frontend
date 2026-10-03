@@ -21,6 +21,25 @@ const Dashboard = () => {
     { x: 80, y: 75, z: 250, name: 'West Wing' },
   ]);
 
+  const [radarData] = useState([
+    { subject: 'Teaching', A: 120, B: 110 },
+    { subject: 'Research', A: 98, B: 130 },
+    { subject: 'Service', A: 86, B: 130 },
+    { subject: 'Admin', A: 99, B: 100 },
+    { subject: 'Mentoring', A: 85, B: 90 },
+    { subject: 'Grants', A: 65, B: 85 },
+  ]);
+
+  const [stackedData] = useState([
+    { name: 'Mon', teaching: 40, research: 24 },
+    { name: 'Tue', teaching: 30, research: 13 },
+    { name: 'Wed', teaching: 20, research: 58 },
+    { name: 'Thu', teaching: 27, research: 39 },
+    { name: 'Fri', teaching: 18, research: 48 },
+    { name: 'Sat', teaching: 23, research: 38 },
+    { name: 'Sun', teaching: 34, research: 43 },
+  ]);
+
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     setUserData(user);
@@ -118,7 +137,7 @@ const Dashboard = () => {
 
         .gauge-container { display: flex; justify-content: space-between; gap: 15px; margin-top: 10px; }
         .gauge-item { flex: 1; text-align: center; position: relative; }
-        .gauge-label { font-size: 0.65rem; font-weight: 800; color: #64748b; margin-top: -10px; z-index: 10; position: relative; }
+        .gauge-label { font-size: 0.55rem; font-weight: 800; color: #8a9a90; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 4px; }
         
         .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; margin-right: 8px; display: inline-block; box-shadow: 0 0 8px #22c55e; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
@@ -162,12 +181,16 @@ const Dashboard = () => {
                             <div className="line-bar-bg"><div className="line-bar-fill" style={{ width: `${40 + Math.cos(liveOffset * 0.1) * 5 + Math.random() * 2}%` }}></div></div>
                         </div>
                     </div>
-                    <div style={{ width: '100%', height: 120 }}>
+                    <div style={{ width: '100%', height: 180 }}>
                         <ResponsiveContainer>
-                            <AreaChart data={liveData.slice(-12)}>
+                            <AreaChart data={liveData.slice(-12)} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorV" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#1a4d2e" stopOpacity={0.3}/><stop offset="95%" stopColor="#1a4d2e" stopOpacity={0}/></linearGradient>
                                 </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                <XAxis dataKey="name" tick={{fontSize: 10, fill: '#64748b'}} tickLine={false} axisLine={false} />
+                                <YAxis tick={{fontSize: 10, fill: '#64748b'}} tickLine={false} axisLine={false} />
+                                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
                                 <Area type="monotone" dataKey="value" stroke="#1a4d2e" strokeWidth={3} fillOpacity={1} fill="url(#colorV)" />
                                 <Area type="monotone" dataKey="s" stroke="#52b788" strokeWidth={2} fillOpacity={0} />
                             </AreaChart>
@@ -179,38 +202,60 @@ const Dashboard = () => {
                     <div className="card-label">System Saturation</div>
                     <div className="gauge-container">
                         <div className="gauge-item">
-                            <ResponsiveContainer width="100%" height={100}>
+                            <ResponsiveContainer width="100%" height={120}>
                                 <PieChart>
-                                    <Pie data={gaugeData(moduleCounts.teaching, 20)} innerRadius={30} outerRadius={40} dataKey="value" startAngle={180} endAngle={-180} animationDuration={1000}>
+                                    <Pie data={gaugeData(moduleCounts.teaching, 20)} innerRadius={36} outerRadius={46} dataKey="value" startAngle={210} endAngle={-30} animationDuration={1000} stroke="none" cornerRadius={10}>
                                         <Cell fill="#1a4d2e" /><Cell fill="#f1f5f9" />
                                     </Pie>
                                 </PieChart>
                             </ResponsiveContainer>
-                            <div className="card-value" style={{ fontSize: '1.2rem', marginTop: '-65px' }}>{moduleCounts.teaching}</div>
-                            <div className="gauge-label">COURSES</div>
+                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <div className="card-value" style={{ fontSize: '1.5rem', lineHeight: 1 }}>{moduleCounts.teaching}</div>
+                                <div className="gauge-label">COURSES</div>
+                            </div>
                         </div>
                         <div className="gauge-item">
-                            <ResponsiveContainer width="100%" height={100}>
+                            <ResponsiveContainer width="100%" height={120}>
                                 <PieChart>
-                                    <Pie data={gaugeData(moduleCounts.research, 20)} innerRadius={30} outerRadius={40} dataKey="value" startAngle={180} endAngle={-180} animationDuration={1000}>
+                                    <Pie data={gaugeData(moduleCounts.research, 20)} innerRadius={36} outerRadius={46} dataKey="value" startAngle={210} endAngle={-30} animationDuration={1000} stroke="none" cornerRadius={10}>
                                         <Cell fill="#52b788" /><Cell fill="#f1f5f9" />
                                     </Pie>
                                 </PieChart>
                             </ResponsiveContainer>
-                            <div className="card-value" style={{ fontSize: '1.2rem', marginTop: '-65px' }}>{moduleCounts.research}</div>
-                            <div className="gauge-label">PUBS</div>
+                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <div className="card-value" style={{ fontSize: '1.5rem', lineHeight: 1 }}>{moduleCounts.research}</div>
+                                <div className="gauge-label">PUBS</div>
+                            </div>
                         </div>
                         <div className="gauge-item">
-                            <ResponsiveContainer width="100%" height={100}>
+                            <ResponsiveContainer width="100%" height={120}>
                                 <PieChart>
-                                    <Pie data={gaugeData(total, 50)} innerRadius={30} outerRadius={40} dataKey="value" startAngle={180} endAngle={-180} animationDuration={1000}>
+                                    <Pie data={gaugeData(total, 50)} innerRadius={36} outerRadius={46} dataKey="value" startAngle={210} endAngle={-30} animationDuration={1000} stroke="none" cornerRadius={10}>
                                         <Cell fill="#0d2c1a" /><Cell fill="#f1f5f9" />
                                     </Pie>
                                 </PieChart>
                             </ResponsiveContainer>
-                            <div className="card-value" style={{ fontSize: '1.2rem', marginTop: '-65px' }}>{total}</div>
-                            <div className="gauge-label">TOTAL</div>
+                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <div className="card-value" style={{ fontSize: '1.5rem', lineHeight: 1 }}>{total}</div>
+                                <div className="gauge-label">TOTAL</div>
+                            </div>
                         </div>
+                    </div>
+                </div>
+
+                <div className="card">
+                    <div className="card-label">Impact Trend</div>
+                    <div style={{ width: '100%', height: 200, marginTop: '10px' }}>
+                        <ResponsiveContainer>
+                            <LineChart data={liveData.slice(-15)} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                <XAxis dataKey="name" tick={{fontSize: 10, fill: '#64748b'}} tickLine={false} axisLine={false} />
+                                <YAxis tick={{fontSize: 10, fill: '#64748b'}} tickLine={false} axisLine={false} />
+                                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                <Line type="monotone" dataKey="value" name="Teaching" stroke="#1a4d2e" strokeWidth={3} dot={{r: 4, strokeWidth: 2}} activeDot={{r: 6}} />
+                                <Line type="monotone" dataKey="s" name="Research" stroke="#f4a261" strokeWidth={3} dot={{r: 4, strokeWidth: 2}} activeDot={{r: 6}} />
+                            </LineChart>
+                        </ResponsiveContainer>
                     </div>
                 </div>
             </div>
@@ -219,9 +264,13 @@ const Dashboard = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div className="card image-replica-card">
                     <div className="card-header"><div className="card-label">Real-time Stream</div><div className="card-value" style={{ fontSize: '1.5rem' }}>{Math.floor(liveData[liveData.length-1].value * 10)}</div></div>
-                    <div style={{ width: '100%', height: 100 }}>
+                    <div style={{ width: '100%', height: 160 }}>
                         <ResponsiveContainer>
-                            <AreaChart data={liveData}>
+                            <AreaChart data={liveData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                <XAxis dataKey="name" tick={{fontSize: 10, fill: '#64748b'}} tickLine={false} axisLine={false} />
+                                <YAxis tick={{fontSize: 10, fill: '#64748b'}} tickLine={false} axisLine={false} />
+                                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
                                 <Area type="stepAfter" dataKey="value" stroke="#1a4d2e" fill="#1a4d2e20" strokeWidth={2} />
                             </AreaChart>
                         </ResponsiveContainer>
@@ -239,15 +288,34 @@ const Dashboard = () => {
                         ))}
                     </div>
                 </div>
+
+                <div className="card image-replica-card">
+                    <div className="card-label">Academic Strengths</div>
+                    <div style={{ width: '100%', height: 240, marginTop: '10px' }}>
+                        <ResponsiveContainer>
+                            <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                                <PolarGrid stroke="#e2e8f0" />
+                                <PolarAngleAxis dataKey="subject" tick={{fontSize: 10, fill: '#64748b'}} />
+                                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                <Radar name="Current" dataKey="A" stroke="#1a4d2e" fill="#1a4d2e" fillOpacity={0.5} />
+                                <Radar name="Goal" dataKey="B" stroke="#52b788" fill="#52b788" fillOpacity={0.3} />
+                            </RadarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
             </div>
 
             {/* COLUMN 3 */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div className="card image-replica-card">
                     <div className="card-label">Volume distribution</div>
-                    <div style={{ width: '100%', height: 120, marginTop: '10px' }}>
+                    <div style={{ width: '100%', height: 180, marginTop: '10px' }}>
                         <ResponsiveContainer>
-                            <BarChart data={liveData.slice(-12)}>
+                            <BarChart data={liveData.slice(-12)} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                <XAxis dataKey="name" tick={{fontSize: 10, fill: '#64748b'}} tickLine={false} axisLine={false} />
+                                <YAxis tick={{fontSize: 10, fill: '#64748b'}} tickLine={false} axisLine={false} />
+                                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} cursor={{fill: '#f8fafc'}} />
                                 <Bar dataKey="value" fill="#1a4d2e" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
@@ -257,9 +325,10 @@ const Dashboard = () => {
                 <div className="card" style={{ padding: 0, overflow: 'hidden', height: '240px' }}>
                     <div style={{ padding: '20px 20px 0 20px' }}><span className="card-label">GLOBAL REACH DISTRIBUTION</span></div>
                     <ResponsiveContainer width="100%" height="100%">
-                        <ScatterChart margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
-                            <XAxis type="number" dataKey="x" hide domain={[0, 100]} />
-                            <YAxis type="number" dataKey="y" hide domain={[0, 100]} />
+                        <ScatterChart margin={{ top: 20, right: 30, bottom: 30, left: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                            <XAxis type="number" dataKey="x" domain={[0, 100]} tick={{fontSize: 10, fill: '#64748b'}} tickLine={false} axisLine={false} label={{ value: 'Longitude', position: 'insideBottomRight', offset: -10, fontSize: 10, fill: '#64748b' }} />
+                            <YAxis type="number" dataKey="y" domain={[0, 100]} tick={{fontSize: 10, fill: '#64748b'}} tickLine={false} axisLine={false} label={{ value: 'Latitude', angle: -90, position: 'insideLeft', fontSize: 10, fill: '#64748b' }} />
                             <ZAxis type="number" dataKey="z" range={[100, 1000]} />
                             <Tooltip cursor={{ strokeDasharray: '3 3' }} content={({ active, payload }) => {
                                 if (active && payload && payload.length) {
@@ -282,6 +351,22 @@ const Dashboard = () => {
                     <div className="spark-container">
                         <div style={{ display: 'flex', alignItems: 'center' }}><span className="status-dot"></span> <span className="card-label">UPTIME 99.98%</span></div>
                         <div style={{ width: 40, height: 20 }}><ResponsiveContainer><LineChart data={liveData.slice(-5)}><Line dataKey="s" stroke="#22c55e" dot={false} strokeWidth={2}/></LineChart></ResponsiveContainer></div>
+                    </div>
+                </div>
+
+                <div className="card">
+                    <div className="card-label">Weekly Activity</div>
+                    <div style={{ width: '100%', height: 200, marginTop: '10px' }}>
+                        <ResponsiveContainer>
+                            <BarChart data={stackedData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                <XAxis dataKey="name" tick={{fontSize: 10, fill: '#64748b'}} tickLine={false} axisLine={false} />
+                                <YAxis tick={{fontSize: 10, fill: '#64748b'}} tickLine={false} axisLine={false} />
+                                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} cursor={{fill: '#f8fafc'}} />
+                                <Bar dataKey="teaching" stackId="a" fill="#1a4d2e" name="Teaching" radius={[0, 0, 4, 4]} />
+                                <Bar dataKey="research" stackId="a" fill="#52b788" name="Research" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
                     </div>
                 </div>
             </div>
