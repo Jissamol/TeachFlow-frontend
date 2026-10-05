@@ -193,14 +193,22 @@ const Research = () => {
                         } : {}}
                     >
                         <div className="timeline-header">
-                            <span className="timeline-type">{entry.research_type}</span>
-                            <span className="timeline-date">🗓 {entry.from_date} to {entry.to_date}</span>
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                              <span className="timeline-type">{entry.research_type}</span>
+                              <span style={{ background: '#dcfce7', color: '#166534', fontWeight: 800, fontSize: '0.75rem', padding: '4px 10px', borderRadius: '12px' }}>
+                                +{entry.score || 0} PBAS Pts
+                              </span>
+                            </div>
+                            <span className="timeline-date">🗓 {entry.from_date || 'N/A'} to {entry.to_date || 'N/A'}</span>
                         </div>
                         
                         <h3 className="timeline-title">{entry.title}</h3>
                         
                         <div className="timeline-meta">
                             <div className="meta-pill"><strong>Academic Year:</strong> {entry.academic_year}</div>
+                            <div className={`meta-pill ${entry.supporting_image ? 'success' : ''}`}>
+                                <strong>Evidence:</strong> {entry.supporting_image ? '✓ Verified Document Attached' : '⚠️ Evidence Upload Needed'}
+                            </div>
                         </div>
                         
                         <div className="timeline-actions">
