@@ -11,6 +11,8 @@ import Research from "./pages/Research";
 import AcademicContribution from "./pages/AcademicContribution";
 import InstitutionalResponsibility from "./pages/InstitutionalResponsibility";
 import Report from "./pages/Report";
+import EvidenceVault from "./pages/EvidenceVault";
+import ScoringRulesConfig from "./pages/ScoringRulesConfig";
 import Layout from "./components/Layout";
 
 function App() {
@@ -53,6 +55,16 @@ function App() {
         <Route path="/pbas/institutional" element={
           <Layout>
             <InstitutionalResponsibility />
+          </Layout>
+        } /> 
+        <Route path="/pbas/evidence" element={
+          <Layout>
+            <EvidenceVault />
+          </Layout>
+        } /> 
+        <Route path="/pbas/rules" element={
+          <Layout>
+            <ScoringRulesConfig />
           </Layout>
         } /> 
         <Route path="/pbas/report" element={
