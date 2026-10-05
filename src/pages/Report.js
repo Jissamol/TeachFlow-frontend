@@ -95,20 +95,22 @@ const Report = () => {
     // Meta Block
     doc.setFillColor(248, 250, 252);
     doc.setDrawColor(226, 232, 240);
-    doc.rect(14, currentY, 182, 28, 'FD');
+    doc.rect(14, currentY, 182, 36, 'FD');
     doc.setFontSize(14); doc.setFont("times", 'bold'); doc.setTextColor(26, 77, 46);
-    doc.text(`FACULTY RECORD: ${user.username ? user.username.toUpperCase() : "STAFF MEMBER"}`, 20, currentY + 12);
+    doc.text(`FACULTY RECORD: ${user.full_name ? user.full_name.toUpperCase() : "FACULTY MEMBER"}`, 20, currentY + 12);
     doc.setFontSize(10); doc.setFont("helvetica", 'normal'); doc.setTextColor(100);
-    doc.text(`${filterText}  |  Generated: ${new Date().toLocaleDateString()}`, 20, currentY + 20);
+    doc.text(`Department: ${user.department || "Academic"}  |  ${filterText}`, 20, currentY + 20);
+    doc.setFont("helvetica", 'bold'); doc.setTextColor(22, 101, 52);
+    doc.text(`OFFICIAL PBAS APPRAISAL & EVIDENCE VALIDATION DOSSIER`, 20, currentY + 28);
     
-    currentY += 45;
+    currentY += 48;
     
     const sections = [
-        { id: "teaching", title: "I. TEACHING & LEARNING", data: allData.teaching.filter(checkMatch) },
-        { id: "studentSupport", title: "II. MENTORSHIP & SUPPORT", data: allData.studentSupport.filter(checkMatch) },
-        { id: "research", title: "III. RESEARCH & PUBLICATION", data: allData.research.filter(checkMatch) },
-        { id: "academic", title: "IV. ACADEMIC ACHIEVEMENTS", data: allData.academic.filter(checkMatch) },
-        { id: "institutional", title: "V. INSTITUTIONAL SERVICE", data: allData.institutional.filter(checkMatch) }
+        { id: "teaching", title: "I. TEACHING & LEARNING (MAX 25 PTS)", data: allData.teaching.filter(checkMatch) },
+        { id: "studentSupport", title: "II. MENTORSHIP & SUPPORT (MAX 15 PTS)", data: allData.studentSupport.filter(checkMatch) },
+        { id: "research", title: "III. RESEARCH & PUBLICATION (MAX 60 PTS)", data: allData.research.filter(checkMatch) },
+        { id: "academic", title: "IV. ACADEMIC ACHIEVEMENTS (MAX 25 PTS)", data: allData.academic.filter(checkMatch) },
+        { id: "institutional", title: "V. INSTITUTIONAL SERVICE (MAX 25 PTS)", data: allData.institutional.filter(checkMatch) }
     ];
 
     const getImageUrl = (url) => {
@@ -156,7 +158,7 @@ const Report = () => {
         if (!selectedModules[s.id]) continue;
         
         checkPageBreak(30);
-        doc.setFontSize(18); doc.setTextColor(26, 77, 46); doc.setFont("times", 'bold'); 
+        doc.setFontSize(16); doc.setTextColor(26, 77, 46); doc.setFont("times", 'bold'); 
         doc.text(s.title, 14, currentY); 
         doc.setDrawColor(26, 77, 46); doc.setLineWidth(0.5);
         doc.line(14, currentY + 3, 196, currentY + 3);
@@ -173,12 +175,15 @@ const Report = () => {
             const entry = s.data[i];
             checkPageBreak(30);
             
-            // Record Mini-Header
-            doc.setFillColor(240, 248, 244); // Very light green
-            doc.rect(14, currentY - 5, 182, 7, 'F');
+            // Record Mini-Header with Score & Evidence Badge
+            doc.setFillColor(240, 248, 244);
+            doc.rect(14, currentY - 5, 182, 8, 'F');
             doc.setFontSize(9); doc.setFont("helvetica", 'bold'); doc.setTextColor(26, 77, 46);
-            doc.text(`RECORD #${i + 1}`, 16, currentY);
-            currentY += 8;
+            
+            const scoreVal = entry.score !== undefined ? entry.score : 0;
+            const evidenceBadge = entry.supporting_image ? "[✓ EVIDENCE VALIDATED]" : "[⚠️ NO PROOF ATTACHED]";
+            doc.text(`RECORD #${i + 1}  •  CALCULATED SCORE: +${scoreVal} PTS  •  ${evidenceBadge}`, 16, currentY);
+            currentY += 9;
             
             const excludedKeys = ['id', 'user', 'created_at', 'updated_at', 'supporting_image'];
             const keys = Object.keys(entry).filter(k => !excludedKeys.includes(k) && entry[k] !== null && entry[k] !== "");
@@ -200,7 +205,7 @@ const Report = () => {
             if (entry.supporting_image) {
                 checkPageBreak(90);
                 doc.setFontSize(9); doc.setFont("helvetica", 'bold'); doc.setTextColor(100);
-                doc.text("ATTACHMENT", 16, currentY + 5);
+                doc.text("ATTACHED PROOF", 16, currentY + 5);
                 
                 const imgUrl = getImageUrl(entry.supporting_image);
                 const imgResult = await addImageToDoc(imgUrl, 65, currentY, 100, 80);
@@ -218,7 +223,7 @@ const Report = () => {
         }
     }
     
-    doc.save(`TeachFlow_Dossier_${filterYear}.pdf`);
+    doc.save(`TeachFlow_PBAS_Dossier_${filterYear}.pdf`);
     setLoading(false);
   };
 
