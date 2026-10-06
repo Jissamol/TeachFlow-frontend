@@ -9,6 +9,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [selectedYear, setSelectedYear] = useState("All");
+  const [notifications, setNotifications] = useState([]);
   const [summary, setSummary] = useState({
     academic_year: "All",
     appraisal_period: {
@@ -42,7 +43,23 @@ const Dashboard = () => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     setUserData(user);
     fetchSummary(selectedYear);
+    fetchNotifications();
   }, [selectedYear]);
+
+  const fetchNotifications = async () => {
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/pbas/notifications/", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data.notifications || []);
+      }
+    } catch (err) {}
+  };
+
 
   const fetchSummary = async (year) => {
     const token = localStorage.getItem("access_token");
@@ -322,7 +339,62 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* FACULTY NOTIFICATIONS WIDGET */}
+        {notifications.length > 0 && (
+          <div style={{
+            background: '#ffffff',
+            border: '1px solid #bbf7d0',
+            borderRadius: '20px',
+            padding: '20px 26px',
+            marginBottom: '30px',
+            boxShadow: '0 8px 24px rgba(26, 77, 46, 0.05)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontWeight: 800, color: '#1a4d2e', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                🔔 Faculty Notifications & Alerts
+              </div>
+              <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 700 }}>
+                {notifications.length} Active System Alerts
+              </span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+              {notifications.map((n) => (
+                <div 
+                  key={n.id}
+                  onClick={() => n.action_url && navigate(n.action_url)}
+                  style={{
+                    background: n.is_read ? '#f8fafc' : '#f0fdf4',
+                    border: `1px solid ${n.is_read ? '#e2e8f0' : '#bbf7d0'}`,
+                    borderRadius: '14px',
+                    padding: '14px 18px',
+                    cursor: n.action_url ? 'pointer' : 'default',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    gap: '12px',
+                    alignItems: 'flex-start'
+                  }}
+                >
+                  <span style={{ fontSize: '1.3rem' }}>{n.icon || '🔔'}</span>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#1e293b' }}>
+                      {n.title}
+                    </div>
+                    <div style={{ fontSize: '0.82rem', color: '#475569', marginTop: '2px', lineHeight: 1.4 }}>
+                      {n.message}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* METRICS ROW */}
+
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '30px' }}>
           <div className="card">
             <div className="card-label">Total PBAS Score</div>
