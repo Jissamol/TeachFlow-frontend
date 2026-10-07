@@ -13,6 +13,7 @@ import InstitutionalResponsibility from "./pages/InstitutionalResponsibility";
 import Report from "./pages/Report";
 import EvidenceVault from "./pages/EvidenceVault";
 import ScoringRulesConfig from "./pages/ScoringRulesConfig";
+import Calendar from "./pages/Calendar";
 import Layout from "./components/Layout";
 
 function App() {
@@ -55,6 +56,11 @@ function App() {
         <Route path="/pbas/institutional" element={
           <Layout>
             <InstitutionalResponsibility />
+          </Layout>
+        } /> 
+        <Route path="/pbas/calendar" element={
+          <Layout>
+            <Calendar />
           </Layout>
         } /> 
         <Route path="/pbas/evidence" element={
