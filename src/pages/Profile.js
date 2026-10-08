@@ -10,7 +10,9 @@ const Profile = () => {
     full_name: "",
     department: "",
     phone: "",
-    email: ""
+    email: "",
+    research_interests: "",
+    designation: ""
   });
   const [profileMsg, setProfileMsg] = useState({ type: "", text: "" });
   const [profilePicBase64, setProfilePicBase64] = useState(localStorage.getItem("profile_picture") || null);
@@ -52,7 +54,9 @@ const Profile = () => {
                 full_name: data.full_name || "",
                 department: data.department || "",
                 phone: data.phone || "",
-                email: data.email || ""
+                email: data.email || "",
+                research_interests: data.research_interests || "",
+                designation: data.designation || ""
             });
             if (data.profile_picture) {
                 const picUrl = data.profile_picture.startsWith('http') ? data.profile_picture : `http://127.0.0.1:8000${data.profile_picture}`;
@@ -96,6 +100,8 @@ const Profile = () => {
     formData.append("full_name", profileData.full_name);
     formData.append("department", profileData.department);
     formData.append("phone", profileData.phone);
+    formData.append("research_interests", profileData.research_interests || "");
+    formData.append("designation", profileData.designation || "");
     if (profilePicFile) {
         formData.append("profile_picture", profilePicFile);
     }
@@ -111,7 +117,6 @@ const Profile = () => {
         const data = await res.json();
         if (res.ok) {
             setProfileMsg({ type: "success", text: "Profile updated successfully!" });
-            // Update local storage
             const updatedUser = { ...user, full_name: data.full_name, department: data.department };
             localStorage.setItem("user", JSON.stringify(updatedUser));
             setUser(updatedUser);
@@ -164,33 +169,34 @@ const Profile = () => {
       <style>{`
         .desk-wrapper { 
             min-height: 100vh; 
-            background: #e2e8f0; 
+            background: #f1f5f9; 
             background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
             background-size: 20px 20px;
             display: flex; 
             flex-direction: column; 
-            justify-content: center; 
             align-items: center; 
-            padding: 40px 20px; 
-            font-family: 'Work Sans', sans-serif; 
+            padding: 40px 20px 60px 20px; 
+            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
         }
 
+        /* Profile ID Card Scene */
         .id-card-scene { 
             width: 100%; 
-            max-width: 850px; 
-            height: 520px; 
+            max-width: 900px; 
+            min-height: 560px; 
             perspective: 1500px; 
             position: relative; 
-            margin-bottom: 40px; 
+            margin-bottom: 30px; 
         }
 
         .id-card-inner { 
             width: 100%; 
-            height: 100%; 
+            min-height: 560px; 
             position: relative; 
             transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); 
             transform-style: preserve-3d; 
         }
+
         .id-card-inner.is-flipped { 
             transform: rotateY(180deg); 
         }
@@ -198,16 +204,17 @@ const Profile = () => {
         .id-card-face { 
             position: absolute; 
             width: 100%; 
-            height: 100%; 
+            min-height: 100%; 
             backface-visibility: hidden; 
             -webkit-backface-visibility: hidden;
-            background: white; 
+            background: #ffffff; 
             border-radius: 20px; 
-            box-shadow: 0 30px 60px rgba(0,0,0,0.15), inset 0 0 0 10px white, inset 0 0 0 12px #e2e8f0; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1), inset 0 0 0 10px white, inset 0 0 0 12px #e2e8f0; 
             overflow: hidden; 
             display: flex; 
             flex-direction: column; 
         }
+
         .id-card-back { 
             transform: rotateY(180deg); 
             background: #f8fafc; 
@@ -230,16 +237,16 @@ const Profile = () => {
 
         /* Front Header */
         .card-header { 
-            height: 100px; 
+            height: 90px; 
             background: #1a4d2e; 
             display: flex; 
             justify-content: center; 
             align-items: flex-end; 
-            padding-bottom: 20px; 
+            padding-bottom: 15px; 
             color: white; 
-            letter-spacing: 5px; 
+            letter-spacing: 4px; 
             font-weight: 800; 
-            font-size: 1.4rem; 
+            font-size: 1.3rem; 
             text-transform: uppercase; 
             font-family: 'Playfair Display', serif; 
         }
@@ -247,8 +254,8 @@ const Profile = () => {
         .card-body { 
             display: flex; 
             flex: 1; 
-            padding: 40px; 
-            gap: 50px; 
+            padding: 30px 40px; 
+            gap: 40px; 
             position: relative; 
         }
 
@@ -280,18 +287,18 @@ const Profile = () => {
             padding: 8px; 
             border: 1px dashed rgba(26,77,46,0.4); 
             border-radius: 50%; 
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         .photo-box { 
-            width: 170px; 
-            height: 170px; 
+            width: 150px; 
+            height: 150px; 
             border: 4px solid #1a4d2e; 
             border-radius: 50%;
             background: #f1f5f9; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            font-size: 5rem; 
+            font-size: 4.5rem; 
             font-family: 'Playfair Display', serif; 
             font-weight: 700; 
             color: #1a4d2e; 
@@ -311,10 +318,10 @@ const Profile = () => {
             width: 100%;
             background: rgba(26,77,46,0.85);
             color: white;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             text-align: center;
-            padding: 10px 0 15px 0;
-            font-family: 'Work Sans', sans-serif;
+            padding: 8px 0 12px 0;
+            font-family: 'Inter', sans-serif;
             text-transform: uppercase;
             letter-spacing: 1px;
             opacity: 0;
@@ -328,53 +335,53 @@ const Profile = () => {
             width: 100%; 
             background: #1a4d2e; 
             color: white; 
-            padding: 8px 24px; 
+            padding: 12px 20px; 
             text-align: center; 
-            font-weight: 800; 
+            font-weight: 700; 
             text-transform: uppercase; 
-            letter-spacing: 2px; 
+            letter-spacing: 1.5px; 
             border: none; 
             cursor: pointer; 
             border-radius: 10px; 
             transition: all 0.2s ease; 
-            font-family: 'Work Sans', sans-serif;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
+            box-shadow: 0 4px 12px rgba(26, 77, 46, 0.2);
         }
-        .seal-btn:hover { background: #123620; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(26, 77, 46, 0.2); }
+        .seal-btn:hover { background: #123620; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(26, 77, 46, 0.3); }
 
-        /* Right Form */
+        /* Right Form Grid */
         .info-col { 
             flex: 1; 
             z-index: 1; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            gap: 25px; 
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px 24px;
+            align-content: start;
         }
 
         .id-field { display: flex; flex-direction: column; }
+        .id-field.full-width { grid-column: span 2; }
+
         .id-label { 
-            font-size: 0.75rem; 
+            font-size: 0.72rem; 
             font-weight: 800; 
             color: #64748b; 
             text-transform: uppercase; 
-            letter-spacing: 1.5px; 
+            letter-spacing: 1.2px; 
             margin-bottom: 4px; 
-            font-family: 'Work Sans', sans-serif;
         }
         .id-input { 
             border: none; 
             border-bottom: 2px dashed #cbd5e1; 
             background: transparent; 
-            font-family: 'Work Sans', sans-serif; 
-            font-size: 1.3rem; 
+            font-size: 1.05rem; 
             color: #1a4d2e; 
             font-weight: 600; 
             padding: 6px 0; 
             outline: none; 
             transition: 0.3s; 
             border-radius: 0;
-            letter-spacing: 0.5px;
+            width: 100%;
         }
         .id-input:focus { border-bottom: 2px solid #1a4d2e; }
         .id-input:disabled { color: #64748b; border-bottom-color: #e2e8f0; }
@@ -384,7 +391,7 @@ const Profile = () => {
         /* Back Security */
         .back-header { 
             height: 90px; 
-            background: #64748b; 
+            background: #475569; 
             display: flex; 
             justify-content: center; 
             align-items: flex-end; 
@@ -396,23 +403,21 @@ const Profile = () => {
             text-transform: uppercase; 
             font-family: 'Playfair Display', serif; 
         }
-        .mag-stripe { height: 60px; background: #0f172a; width: 100%; margin-top: 25px; }
+        .mag-stripe { height: 50px; background: #0f172a; width: 100%; margin-top: 15px; }
 
-        .back-body { padding: 40px 80px; display: flex; flex-direction: column; gap: 30px; flex: 1; z-index: 1; justify-content: center; }
-        .back-body .id-input { font-size: 1.2rem; }
+        .back-body { padding: 40px 60px; display: flex; flex-direction: column; gap: 20px; flex: 1; z-index: 1; justify-content: center; max-width: 600px; margin: 0 auto; width: 100%; }
 
         .controls { display: flex; gap: 20px; }
         .flip-btn { 
             background: white; 
             color: #1a4d2e; 
             border: 2px solid #1a4d2e; 
-            padding: 14px 40px; 
+            padding: 12px 36px; 
             font-weight: 800; 
             border-radius: 30px; 
             cursor: pointer; 
-            font-size: 1rem; 
+            font-size: 0.95rem; 
             transition: 0.3s; 
-            font-family: 'Work Sans', sans-serif;
             text-transform: uppercase;
             letter-spacing: 1px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.05);
@@ -424,19 +429,21 @@ const Profile = () => {
         .msg-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 
         @media (max-width: 900px) {
+            .info-col { grid-template-columns: 1fr; }
+            .id-field.full-width { grid-column: span 1; }
             .id-card-scene { height: auto; perspective: none; }
             .id-card-inner { transform: none !important; transition: none; display: flex; flex-direction: column; gap: 20px; }
             .id-card-face { position: relative; height: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
             .id-card-back { transform: none; }
             .card-body { flex-direction: column; padding: 30px 20px; align-items: center; gap: 30px; }
             .avatar-col { width: 100%; }
-            .info-col { width: 100%; }
             .flip-btn { display: none; }
         }
       `}</style>
       
       <div className="desk-wrapper">
         
+        {/* ID Card Scene */}
         <div className="id-card-scene">
             <div className={`id-card-inner ${isFlipped ? 'is-flipped' : ''}`}>
                 
@@ -470,14 +477,19 @@ const Profile = () => {
                         </div>
                         
                         <div className="info-col">
-                            <div className="id-field">
+                            <div className="id-field full-width">
                                 <label className="id-label">Official Registry ID (Email)</label>
                                 <input type="email" name="email" value={profileData.email} disabled className="id-input" />
                             </div>
                             
                             <div className="id-field">
                                 <label className="id-label">Legal Name</label>
-                                <input type="text" name="full_name" value={profileData.full_name} onChange={handleProfileChange} required className="id-input" />
+                                <input type="text" name="full_name" value={profileData.full_name} onChange={handleProfileChange} required className="id-input" placeholder="e.g. Dr. Jane Doe" />
+                            </div>
+
+                            <div className="id-field">
+                                <label className="id-label">Designation / Title</label>
+                                <input type="text" name="designation" value={profileData.designation} onChange={handleProfileChange} className="id-input" placeholder="e.g. Associate Professor" />
                             </div>
                             
                             <div className="id-field">
@@ -497,7 +509,12 @@ const Profile = () => {
 
                             <div className="id-field">
                                 <label className="id-label">Contact Number</label>
-                                <input type="text" name="phone" value={profileData.phone} onChange={handleProfileChange} required className="id-input" />
+                                <input type="text" name="phone" value={profileData.phone} onChange={handleProfileChange} required className="id-input" placeholder="e.g. 9876543210" />
+                            </div>
+
+                            <div className="id-field full-width">
+                                <label className="id-label">Research Interests</label>
+                                <input type="text" name="research_interests" value={profileData.research_interests} onChange={handleProfileChange} className="id-input" placeholder="e.g. Artificial Intelligence, Distributed Computing" />
                             </div>
                         </div>
                     </form>
